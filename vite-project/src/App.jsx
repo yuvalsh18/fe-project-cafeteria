@@ -7,6 +7,8 @@ import { Typography } from '@mui/material'
 import Header from './Header'
 import { Route, Routes } from 'react-router-dom'
 import Home from './Home'
+import Help from './Help'
+import Info from './Info'
 
 function App() {
   const [count, setCount] = useState(0)
@@ -17,14 +19,11 @@ function App() {
 
       <Routes>
         <Route path='/' element={<Home />} />
-        {/* <Route path="/help" element={<Help />} /> */}
+        <Route path="/help" element={<Help />} />
+        <Route path="/info" element={<Info />} />
       </Routes>
 
-      <Typography variant='p'>
-        This is the first page of our cafeteria. We are using React with Vite.
-        <br />
-        Project by benji and shamir.
-      </Typography>
+      
     </>
   )
 }
