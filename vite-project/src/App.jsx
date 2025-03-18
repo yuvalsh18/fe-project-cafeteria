@@ -21,9 +21,7 @@ function App() {
         <Route path='/' element={<Home />} />
         <Route path="/help" element={<Help />} />
         <Route path="/info" element={<Info />} />
-      </Routes>
-
-      
+      </Routes>    
     </>
   )
 }
