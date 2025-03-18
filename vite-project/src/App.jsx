@@ -10,7 +10,9 @@ function App() {
     <>
       <h1>Ono Cafeteria</h1>
       <p>
-        This is the first page of our cafeteria. We are using React with Vite.
+        This is the first page of our cafeteria. We are using React with Vite. 
+        project by benji and shamir 
+        
       </p>
     </>
   )
