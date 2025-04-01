@@ -2,6 +2,6 @@ import React from 'react'
  
 export default function Home() {
   return (
-    <div>Home</div>
+    <Typography variant="h4">Home page</Typography>
   )
  }
