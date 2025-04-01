@@ -33,6 +33,13 @@ export default function MenuItemForm() {
       return;
     }
 
+    // Create FormData object
+    const formData = new FormData();
+    formData.append('itemName', itemName);
+    formData.append('price', price);
+    formData.append('availability', availability);
+    formData.append('category', category);
+
     // Get existing menu from local storage
     const storedMenu = localStorage.getItem('menu');
     const currentMenu = storedMenu ? JSON.parse(storedMenu) : [];
@@ -44,12 +51,13 @@ export default function MenuItemForm() {
       nextItemId = lastItem.itemId + 1;
     }
 
+    // Create the new item object
     const newItem = {
-      itemId: nextItemId, // Use the calculated next item ID
-      item: itemName,
-      price: `$${parseFloat(price).toFixed(2)}`, // Format price with $ and 2 decimal places
-      availability: availability,
-      category: category,
+      itemId: nextItemId,
+      item: formData.get('itemName'), // Get values from FormData
+      price: `$${parseFloat(formData.get('price')).toFixed(2)}`, // Format price
+      availability: formData.get('availability'),
+      category: formData.get('category'),
     };
 
     // Add new item to the menu
@@ -66,6 +74,11 @@ export default function MenuItemForm() {
 
     // Navigate back to the info page
     navigate('/info');
+
+    // Log FormData for debugging (optional)
+    for (const pair of formData.entries()) {
+      console.log(`${pair[0]}, ${pair[1]}`);
+    }
   };
 
   return (
