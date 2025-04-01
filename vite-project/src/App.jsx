@@ -9,9 +9,16 @@ import { Route, Routes } from 'react-router-dom'
 import Home from './Home'
 import Help from './Help'
 import Info from './Info'
+import usePageTitle from './usePageTitle';
+
+const titleMap = {
+  '/': 'Home - Ono cafeteria',
+  '/Help': 'Help - Ono cafeteria',
+  '/Info': 'Info - Ono cafeteria'
+};
 
 function App() {
-  const [count, setCount] = useState(0)
+  usePageTitle(titleMap, 'Ono cafeteria')
 
   return (
     <>
