@@ -8,6 +8,7 @@ import {
   MenuItem,
   Button,
   Box,
+  colors,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
 
@@ -82,8 +83,8 @@ export default function MenuItemForm() {
   };
 
   return (
-    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, mx: 'auto', mt: 4, p:2, border:'1px solid #ccc', borderRadius:'5px' }}>
-      <Typography variant="h4">New Menu Item</Typography>
+    <Box sx={{ display: 'flex', flexDirection: 'column', gap: 2, maxWidth: 400, mx: 'auto', mt: 4, p:2, border:'1px solid #ccc', borderRadius:'5px', background: '#f3f6fa' }}>
+      <Typography variant="h4" sx={{ color: 'black' }}>New Menu Item</Typography>
       <form onSubmit={handleSubmit}>
         <Box sx={{mb:2}}>
           <TextField
