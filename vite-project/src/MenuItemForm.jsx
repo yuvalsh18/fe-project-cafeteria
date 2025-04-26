@@ -11,6 +11,8 @@ import {
   colors,
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { collection, addDoc, getDocs, query, where } from "firebase/firestore";
+import { db } from "./firebase";
 
 export default function MenuItemForm() {
   const [itemName, setItemName] = useState('');
@@ -19,7 +21,7 @@ export default function MenuItemForm() {
   const [category, setCategory] = useState('');
   const navigate = useNavigate();
 
-  const handleSubmit = (event) => {
+  const handleSubmit = async (event) => {
     event.preventDefault();
 
     // Basic validation
@@ -34,51 +36,32 @@ export default function MenuItemForm() {
       return;
     }
 
-    // Create FormData object
-    const formData = new FormData();
-    formData.append('itemName', itemName);
-    formData.append('price', price);
-    formData.append('availability', availability);
-    formData.append('category', category);
+    try {
+      // Generate a unique random ID for the item
+      let itemId;
+      let exists = true;
+      while (exists) {
+        itemId = Math.floor(Math.random() * 1000000000);
+        const q = query(collection(db, "menuItems"), where("ID", "==", itemId));
+        const snapshot = await getDocs(q);
+        exists = !snapshot.empty;
+      }
 
-    // Get existing menu from local storage
-    const storedMenu = localStorage.getItem('menu');
-    const currentMenu = storedMenu ? JSON.parse(storedMenu) : [];
+      await addDoc(collection(db, "menuItems"), {
+        ID: itemId,
+        Item: itemName,
+        Price: parseFloat(price),
+        Availability: availability === "Available",
+        Category: category
+      });
 
-    // Determine the next available item ID
-    let nextItemId = 1;
-    if (currentMenu.length > 0) {
-      const lastItem = currentMenu[currentMenu.length - 1];
-      nextItemId = lastItem.itemId + 1;
-    }
-
-    // Create the new item object
-    const newItem = {
-      itemId: nextItemId,
-      item: formData.get('itemName'), // Get values from FormData
-      price: `$${parseFloat(formData.get('price')).toFixed(2)}`, // Format price
-      availability: formData.get('availability'),
-      category: formData.get('category'),
-    };
-
-    // Add new item to the menu
-    const updatedMenu = [...currentMenu, newItem];
-
-    // Save updated menu to local storage
-    localStorage.setItem('menu', JSON.stringify(updatedMenu));
-
-    // Reset form fields
-    setItemName('');
-    setPrice('');
-    setAvailability('Available');
-    setCategory('');
-
-    // Navigate back to the info page
-    navigate('/info');
-
-    // Log FormData for debugging (optional)
-    for (const pair of formData.entries()) {
-      console.log(`${pair[0]}, ${pair[1]}`);
+      setItemName('');
+      setPrice('');
+      setAvailability('Available');
+      setCategory('');
+      navigate('/info');
+    } catch (error) {
+      alert("Failed to add item: " + error.message);
     }
   };
 

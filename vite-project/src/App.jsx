@@ -1,16 +1,19 @@
-import { useState } from 'react'
-import reactLogo from './assets/react.svg'
-import viteLogo from '/vite.svg'
-import './App.css'
-import '@mui/material'
-import { Menu, Typography } from '@mui/material'
-import Header from './Header'
-import { Route, Routes } from 'react-router-dom'
-import Home from './Home'
-import Help from './Help'
-import Info from './Info'
+import { useState, useEffect } from 'react';
+import reactLogo from './assets/react.svg';
+import viteLogo from '/vite.svg';
+import './App.css';
+import '@mui/material';
+import { Menu, Typography } from '@mui/material';
+import Header from './Header';
+import { Route, Routes } from 'react-router-dom';
+import { collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
+import Home from './Home';
+import Help from './Help';
+import Info from './Info';
 import usePageTitle from './usePageTitle';
-import MenuItemForm from './MenuItemForm'
+import MenuItemForm from './MenuItemForm';
+import { db } from "./firebase";
+
 
 const titleMap = {
   '/': 'Home - Ono cafeteria',

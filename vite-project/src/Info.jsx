@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { useNavigate } from 'react-router-dom'; // Import useNavigate
+import { useNavigate } from 'react-router-dom';
 import Table from '@mui/material/Table';
 import TableBody from '@mui/material/TableBody';
 import TableCell from '@mui/material/TableCell';
@@ -7,41 +7,43 @@ import TableContainer from '@mui/material/TableContainer';
 import TableHead from '@mui/material/TableHead';
 import TableRow from '@mui/material/TableRow';
 import Paper from '@mui/material/Paper';
-import { Typography, Button, Box } from '@mui/material'; // Import Button and Box
-
-function createData(itemId, item, price, availability, category) {
-  return { itemId, item, price, availability, category };
-}
+import { Typography, Button, Box } from '@mui/material';
+import { collection, onSnapshot } from "firebase/firestore";
+import { db } from "./firebase";
 
 export default function Info() {
   const [rows, setRows] = useState([]);
-  const navigate = useNavigate(); // Initialize navigate
+  const navigate = useNavigate();
 
   useEffect(() => {
-    const storedMenu = localStorage.getItem('menu');
-    if (storedMenu) {
-      setRows(JSON.parse(storedMenu));
-    } else {
-      const defaultMenu = [
-        createData(1, 'Coffee', '$2.50', 'Available', 'Beverage'),
-        createData(2, 'Sandwich', '$5.00', 'Available', 'Food'),
-        createData(3, 'Salad', '$4.00', 'Out of Stock', 'Food'),
-        createData(4, 'Juice', '$3.00', 'Available', 'Beverage'),
-        createData(5, 'Cookie', '$1.50', 'Available', 'Snack'),
-      ];
-      localStorage.setItem('menu', JSON.stringify(defaultMenu));
-      setRows(defaultMenu);
-    }
+    // Listen to Firestore menuItems collection
+    const unsubscribe = onSnapshot(
+      collection(db, "menuItems"),
+      (snapshot) => {
+        const menuData = snapshot.docs.map(doc => {
+          const d = doc.data();
+          return {
+            itemId: d.ID || doc.id,
+            item: d.Item,
+            price: d.Price,
+            availability: d.Availability ? "Available" : "Out of Stock",
+            category: d.Category
+          };
+        });
+        setRows(menuData);
+      }
+    );
+    return () => unsubscribe();
   }, []);
 
   return (
     <> 
       <Typography variant="h4">Info page</Typography>
-      <Box sx={{ textAlign: 'left' }}> {/* Replaced div with Box */}
+      <Box sx={{ textAlign: 'left' }}>
         <Button 
           variant="contained" 
           color="primary" 
-          onClick={() => navigate('/addMenuItem')} // Navigate to addMenuItem
+          onClick={() => navigate('/addMenuItem')}
           style={{ marginBottom: '16px' }}
         >
           New Item
