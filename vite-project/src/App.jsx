@@ -13,6 +13,7 @@ import Menu from './Menu';
 import usePageTitle from './usePageTitle';
 import MenuItemForm from './MenuItemForm';
 import { db } from "./firebase";
+import Students from './Students';
 
 
 const titleMap = {
@@ -20,7 +21,8 @@ const titleMap = {
   '/Help': 'Help - Ono cafeteria',
   '/Menu': 'Menu - Ono cafeteria',
   '/addMenuItem': 'New Menu Item - Ono cafeteria',
-  '/editMenuItem/:itemId': 'Edit Menu Item - Ono cafeteria'
+  '/editMenuItem/:itemId': 'Edit Menu Item - Ono cafeteria',
+  '/students': 'Students - Ono cafeteria'
 };
 
 function App() {
@@ -37,6 +39,7 @@ function App() {
         <Route path="/addMenuItem" element={<MenuItemForm />} />
         {/* Add edit route */}
         <Route path="/editMenuItem/:itemId" element={<MenuItemForm editMode={true} />} />
+        <Route path="/students" element={<Students />} />
       </Routes>    
     </>
   )
