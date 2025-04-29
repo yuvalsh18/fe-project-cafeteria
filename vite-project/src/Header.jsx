@@ -2,7 +2,7 @@ import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Typography from '@mui/material/Typography';
 import Button from '@mui/material/Button';
-import { Box, Container, IconButton, Menu, MenuItem } from '@mui/material';
+import { Box, Container, IconButton, Menu, MenuItem, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
@@ -13,6 +13,7 @@ import { useState } from 'react';
     function Header() {
       const navigate = useNavigate();
       const [anchorElNav, setAnchorElNav] = useState(null);
+      const [mode, setMode] = useState(() => localStorage.getItem('mode') || 'student');
 
       const handleOpenNavMenu = (event) => {
         setAnchorElNav(event.currentTarget);
@@ -20,6 +21,14 @@ import { useState } from 'react';
 
       const handleCloseNavMenu = () => {
         setAnchorElNav(null);
+      };
+
+      const handleModeChange = (event, newMode) => {
+        if (newMode) {
+          setMode(newMode);
+          localStorage.setItem('mode', newMode);
+          window.dispatchEvent(new Event('mode-changed')); // Notify Home to update
+        }
       };
 
       return (
@@ -119,9 +128,9 @@ import { useState } from 'react';
                       my: 2, 
                       color: 'white', 
                       display: 'block',
-                      outline: 'none', // Remove border on click
+                      outline: 'none',
                       '&:focus': {
-                        outline: 'none', // Remove border on focus
+                        outline: 'none',
                       },
                     }}
                   >
@@ -129,7 +138,63 @@ import { useState } from 'react';
                   </Button>
                 ))}
               </Box>
-    
+              {/* Mode Switcher */}
+              <Box sx={{ ml: 2 }}>
+                <ToggleButtonGroup
+                  value={mode}
+                  exclusive
+                  onChange={handleModeChange}
+                  size="small"
+                  aria-label="mode switcher"
+                  sx={{
+                    background: '#1976d2',
+                    borderRadius: 2,
+                    boxShadow: 1,
+                    border: '1px solid #1976d2',
+                  }}
+                >
+                  <ToggleButton
+                    value="student"
+                    aria-label="student mode"
+                    sx={{
+                      color: mode === 'student' ? '#1976d2' : '#fff',
+                      backgroundColor: mode === 'student' ? '#fff' : '#1976d2',
+                      fontWeight: 700,
+                      border: 'none',
+                      '&.Mui-selected, &.Mui-selected:hover': {
+                        color: '#1976d2',
+                        backgroundColor: '#fff',
+                      },
+                      '&:hover': {
+                        backgroundColor: '#1565c0',
+                        color: '#fff'
+                      }
+                    }}
+                  >
+                    Student
+                  </ToggleButton>
+                  <ToggleButton
+                    value="admin"
+                    aria-label="admin mode"
+                    sx={{
+                      color: mode === 'admin' ? '#1976d2' : '#fff',
+                      backgroundColor: mode === 'admin' ? '#fff' : '#1976d2',
+                      fontWeight: 700,
+                      border: 'none',
+                      '&.Mui-selected, &.Mui-selected:hover': {
+                        color: '#1976d2',
+                        backgroundColor: '#fff',
+                      },
+                      '&:hover': {
+                        backgroundColor: '#1565c0',
+                        color: '#fff'
+                      }
+                    }}
+                  >
+                    Admin
+                  </ToggleButton>
+                </ToggleButtonGroup>
+              </Box>
             </Toolbar>
           </Container>
         </AppBar>
