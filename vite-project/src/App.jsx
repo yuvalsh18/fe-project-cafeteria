@@ -3,13 +3,13 @@ import reactLogo from './assets/react.svg';
 import viteLogo from '/vite.svg';
 import './App.css';
 import '@mui/material';
-import { Menu, Typography } from '@mui/material';
+import { Typography } from '@mui/material';
 import Header from './Header';
 import { Route, Routes } from 'react-router-dom';
 import { collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
 import Home from './Home';
 import Help from './Help';
-import Info from './Info';
+import Menu from './Menu';
 import usePageTitle from './usePageTitle';
 import MenuItemForm from './MenuItemForm';
 import { db } from "./firebase";
@@ -18,8 +18,9 @@ import { db } from "./firebase";
 const titleMap = {
   '/': 'Home - Ono cafeteria',
   '/Help': 'Help - Ono cafeteria',
-  '/Info': 'Info - Ono cafeteria',
-  '/addMenuItem': 'New Menu Item - Ono cafeteria'
+  '/Menu': 'Menu - Ono cafeteria',
+  '/addMenuItem': 'New Menu Item - Ono cafeteria',
+  '/editMenuItem/:itemId': 'Edit Menu Item - Ono cafeteria'
 };
 
 function App() {
@@ -32,8 +33,10 @@ function App() {
       <Routes>
         <Route path='/' element={<Home />} />
         <Route path="/help" element={<Help />} />
-        <Route path="/info" element={<Info />} />
+        <Route path="/menu" element={<Menu />} />
         <Route path="/addMenuItem" element={<MenuItemForm />} />
+        {/* Add edit route */}
+        <Route path="/editMenuItem/:itemId" element={<MenuItemForm editMode={true} />} />
       </Routes>    
     </>
   )

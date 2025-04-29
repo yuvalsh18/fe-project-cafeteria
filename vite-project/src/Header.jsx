@@ -8,7 +8,7 @@ import { useNavigate } from 'react-router-dom';
 import { useState } from 'react';
 
     
-    const pages = ['Info', 'Help'];
+    const pages = ['Menu', 'Help'];
 
     function Header() {
       const navigate = useNavigate();
@@ -91,7 +91,7 @@ import { useState } from 'react';
                   sx={{ display: { xs: 'block', md: 'none' } }}
                 >
                   {pages.map((page) => (
-                    <MenuItem key={page} onClick={() => { handleCloseNavMenu(); navigate('/' + page); }}>
+                    <MenuItem key={page} onClick={() => { handleCloseNavMenu(); navigate('/' + page.toLowerCase()); }}>
                       <Typography sx={{ textAlign: 'center' }}>{page} </Typography>
                     </MenuItem>
                   ))}
@@ -123,7 +123,7 @@ import { useState } from 'react';
                 {pages.map((page) => (
                   <Button
                     key={page}
-                    onClick={() => { handleCloseNavMenu(); navigate('/' + page); }}
+                    onClick={() => { handleCloseNavMenu(); navigate('/' + page.toLowerCase()); }}
                     sx={{ 
                       my: 2, 
                       color: 'white', 
