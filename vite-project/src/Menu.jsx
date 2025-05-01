@@ -165,14 +165,16 @@ export default function Menu() {
       <Box sx={{ mt: 10 }}> {/* Add margin-top to push content below header */}
         <Typography variant="h4">Menu page</Typography>
         <Box sx={{ textAlign: 'left' }}>
-          <Button 
-            variant="contained" 
-            color="primary" 
-            onClick={() => navigate('/addMenuItem')}
-            style={{ marginBottom: '16px' }}
-          >
-            New Item
-          </Button>
+          {isAdmin && (
+            <Button 
+              variant="contained" 
+              color="primary" 
+              onClick={() => navigate('/addMenuItem')}
+              style={{ marginBottom: '16px' }}
+            >
+              New Item
+            </Button>
+          )}
         </Box>
         {loading ? (
           <Typography variant="body1" sx={{ textAlign: 'center', marginTop: 2 }}>
