@@ -216,7 +216,7 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
             label={<span><AccessTimeIcon fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />Required Pickup/Delivery Time</span>}
             value={requiredTime}
             onChange={setRequiredTime}
-            renderInput={(params) => (
+            textField={(params) => (
               <TextField {...params} fullWidth sx={{ mb: 2 }} required disabled={isReadOnly} />
             )}
             sx={{ mb: 2, width: '100%' }}
