@@ -1,5 +1,5 @@
 import React, { useEffect, useState } from 'react';
-import { Box, Typography, Paper, Grid, CircularProgress, Alert, Chip, Stack } from '@mui/material';
+import { Box, Typography, Paper, Grid, CircularProgress, Alert, LinearProgress } from '@mui/material';
 import { db } from '../firebase';
 import { collection, getCountFromServer } from 'firebase/firestore';
 import PeopleIcon from '@mui/icons-material/People';
@@ -86,15 +86,24 @@ export default function AdminDashboard() {
     return () => { unsub && (unsub = null); };
   }, []);
 
+  const totalOrders = Object.values(stats.orders).reduce((a, b) => a + b, 0);
+  const orderStatusLabels = [
+    { label: 'New', value: stats.orders.new, color: '#1976d2' },
+    { label: 'In Making', value: stats.orders.inMaking, color: '#43a047' },
+    { label: 'In Delivery', value: stats.orders.inDelivery, color: '#fbc02d' },
+    { label: 'Waiting for Pickup', value: stats.orders.waitingForPickup, color: '#ff9800' },
+    { label: 'Done', value: stats.orders.done, color: '#4caf50' },
+  ];
+
   return (
     <Box sx={{ p: 4, minHeight: '100vh', bgcolor: '#181a20' }}>
-      <Typography variant="h3" gutterBottom sx={{ color: '#fff', fontWeight: 700, textAlign: 'center', mb: 4, letterSpacing: 2 }}>
+      <Typography variant="h3" gutterBottom sx={{ color: '#fff', fontWeight: 700, textAlign: 'center', mb: 4, letterSpacing: 2, mt: 2 }}>
         Admin Dashboard
       </Typography>
       <Grid container spacing={4} justifyContent="center">
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: 3 }}>
-            <Typography variant="h6" gutterBottom>Firestore Connectivity</Typography>
+            <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>Firestore Connectivity</Typography>
             {firestoreStatus === 'checking' && <CircularProgress size={20} />}
             {firestoreStatus === 'connected' && <Alert severity="success">Connected to Firestore</Alert>}
             {firestoreStatus === 'disconnected' && <Alert severity="error">Not connected to Firestore</Alert>}
@@ -102,7 +111,7 @@ export default function AdminDashboard() {
         </Grid>
         <Grid item xs={12} md={8}>
           <Paper sx={{ p: 4, borderRadius: 3, boxShadow: 3, bgcolor: '#23272f' }}>
-            <Typography variant="h5" gutterBottom sx={{ color: '#fff', fontWeight: 600, mb: 3 }}>Website Statistics</Typography>
+            <Typography variant="h5" gutterBottom sx={{ color: '#fff', fontWeight: 600, mb: 3, textAlign: 'center', letterSpacing: 1 }}>Website Statistics</Typography>
             {loading ? (
               <Box sx={{ display: 'flex', justifyContent: 'center', alignItems: 'center', minHeight: 120 }}>
                 <CircularProgress />
@@ -110,33 +119,47 @@ export default function AdminDashboard() {
             ) : error ? (
               <Alert severity="error">{error}</Alert>
             ) : (
-              <Grid container spacing={4}>
+              <Grid container spacing={4} justifyContent="center" alignItems="stretch">
                 <Grid item xs={12} sm={4}>
-                  <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 2, boxShadow: 2, bgcolor: '#21242b' }}>
-                    <PeopleIcon sx={{ fontSize: 40, color: '#1976d2', mb: 1 }} />
-                    <Typography variant="h3" sx={{ color: '#fff', fontWeight: 700 }}>{stats.students}</Typography>
-                    <Typography sx={{ color: '#b0b3b8', fontWeight: 500 }}>Students</Typography>
+                  <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3, boxShadow: 4, bgcolor: '#23272f', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <PeopleIcon sx={{ fontSize: 44, color: '#1976d2', mb: 1 }} />
+                    <Typography variant="h3" sx={{ color: '#fff', fontWeight: 800, mb: 0 }}>{stats.students}</Typography>
+                    <Typography sx={{ color: '#b0b3b8', fontWeight: 600, fontSize: 18, mt: 1 }}>Students</Typography>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 2, boxShadow: 2, bgcolor: '#21242b' }}>
-                    <RestaurantMenuIcon sx={{ fontSize: 40, color: '#43a047', mb: 1 }} />
-                    <Typography variant="h3" sx={{ color: '#fff', fontWeight: 700 }}>{stats.menuItems}</Typography>
-                    <Typography sx={{ color: '#b0b3b8', fontWeight: 500 }}>Menu Items</Typography>
+                  <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3, boxShadow: 4, bgcolor: '#23272f', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <RestaurantMenuIcon sx={{ fontSize: 44, color: '#43a047', mb: 1 }} />
+                    <Typography variant="h3" sx={{ color: '#fff', fontWeight: 800, mb: 0 }}>{stats.menuItems}</Typography>
+                    <Typography sx={{ color: '#b0b3b8', fontWeight: 600, fontSize: 18, mt: 1 }}>Menu Items</Typography>
                   </Paper>
                 </Grid>
                 <Grid item xs={12} sm={4}>
-                  <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 2, boxShadow: 2, bgcolor: '#21242b' }}>
-                    <AssignmentIcon sx={{ fontSize: 40, color: '#fbc02d', mb: 1 }} />
-                    <Typography variant="h5" sx={{ color: '#fff', fontWeight: 700, mb: 1 }}>Orders</Typography>
-                    <Stack spacing={1} sx={{ mb: 1 }}>
-                      <Chip label={`New: ${stats.orders.new}`} color="primary" variant="filled" size="small" sx={{ bgcolor: '#1976d2', color: '#fff', fontWeight: 600 }} />
-                      <Chip label={`In Making: ${stats.orders.inMaking}`} color="info" variant="filled" size="small" sx={{ bgcolor: '#0288d1', color: '#fff', fontWeight: 600 }} />
-                      <Chip label={`In Delivery: ${stats.orders.inDelivery}`} color="warning" variant="filled" size="small" sx={{ bgcolor: '#fbc02d', color: '#fff', fontWeight: 600 }} />
-                      <Chip label={`Waiting for Pickup: ${stats.orders.waitingForPickup}`} color="secondary" variant="filled" size="small" sx={{ bgcolor: '#7c4dff', color: '#fff', fontWeight: 600 }} />
-                      <Chip label={`Done: ${stats.orders.done}`} color="success" variant="filled" size="small" sx={{ bgcolor: '#43a047', color: '#fff', fontWeight: 600 }} />
-                    </Stack>
-                    <Typography sx={{ color: '#fff', fontWeight: 700, mt: 2, fontSize: 18 }}>Total: {Object.values(stats.orders).reduce((a, b) => a + b, 0)}</Typography>
+                  <Paper sx={{ p: 3, textAlign: 'center', borderRadius: 3, boxShadow: 4, bgcolor: '#23272f', height: '100%', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
+                    <AssignmentIcon sx={{ fontSize: 44, color: '#fbc02d', mb: 1 }} />
+                    <Typography sx={{ color: '#fff', fontWeight: 800, fontSize: 40, mb: 0 }}> {totalOrders} </Typography>
+                    <Typography sx={{ color: '#b0b3b8', fontWeight: 600, fontSize: 18, mt: 1 }}>Orders</Typography>
+                  </Paper>
+                </Grid>
+                <Grid item xs={12}>
+                  <Paper sx={{ p: 3, bgcolor: '#23272f', borderRadius: 3, boxShadow: 4, mt: 2 }}>
+                    <Typography variant="h6" sx={{ color: '#fff', mb: 3, fontWeight: 700, textAlign: 'center', letterSpacing: 1 }}>Orders by Status (Progress)</Typography>
+                    <Box sx={{ width: 600, mx: 'auto' }}> {/* Fixed width for all bars */}
+                      {orderStatusLabels.map((s) => (
+                        <Box key={s.label} sx={{ mb: 3, display: 'flex', alignItems: 'center', gap: 2, width: '100%' }}>
+                          <Box sx={{ width: 180, pr: 2 }}>
+                            <Typography sx={{ color: s.color, fontWeight: 700, fontSize: 18, textShadow: '0 1px 2px #111', whiteSpace: 'nowrap', ml: 0 }}>{s.label} <span style={{color:'#b0b3b8', fontWeight:600}}>({s.value})</span></Typography>
+                          </Box>
+                          <Box sx={{ flex: 1, minWidth: 0, width: '100%' }}>
+                            <LinearProgress
+                              variant="determinate"
+                              value={totalOrders ? Math.round((s.value / totalOrders) * 100) : 0}
+                              sx={{ width: '100%', height: 14, borderRadius: 2, bgcolor: '#333', '& .MuiLinearProgress-bar': { backgroundColor: s.color } }}
+                            />
+                          </Box>
+                        </Box>
+                      ))}
+                    </Box>
                   </Paper>
                 </Grid>
               </Grid>
