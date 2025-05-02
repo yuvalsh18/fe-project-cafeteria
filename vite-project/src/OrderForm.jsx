@@ -12,6 +12,14 @@ import Autocomplete from '@mui/material/Autocomplete';
 import { DateTimePicker } from '@mui/x-date-pickers/DateTimePicker';
 import { LocalizationProvider } from '@mui/x-date-pickers/LocalizationProvider';
 import { AdapterDateFns } from '@mui/x-date-pickers/AdapterDateFns';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import PersonIcon from '@mui/icons-material/Person';
+import CancelIcon from '@mui/icons-material/Cancel';
+import CheckCircleIcon from '@mui/icons-material/CheckCircle';
+import ListSubheader from '@mui/material/ListSubheader';
 
 export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
   const [menuItems, setMenuItems] = useState([]);
@@ -26,6 +34,8 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
   const [studentIdInput, setStudentIdInput] = useState('');
   const [students, setStudents] = useState([]);
   const [orderStatus, setOrderStatus] = useState('new');
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingOrder, setPendingOrder] = useState(null);
 
   // Fetch menu items from Firestore
   useEffect(() => {
@@ -38,6 +48,7 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
           name: d.Item,
           price: d.Price,
           availability: d.Availability,
+          category: d.Category || 'Other',
         };
       });
       setMenuItems(items.filter(i => i.availability));
@@ -100,12 +111,42 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
     }
   }, [pickupOrDelivery]);
 
-  const handleSubmit = async (e) => {
+  const handleFormSubmit = (e) => {
     e.preventDefault();
+    setError('');
+    setSuccess(false);
+    // Validation for all required fields
+    if (!isFormValid()) {
+      if (!requiredTime) setError('Please select required time.');
+      else if (selectedItems.length === 0) setError('Please select at least one menu item.');
+      else if (mode === 'new' && !studentIdInput) setError('Student ID is required.');
+      else if (pickupOrDelivery === 'delivery' && !deliveryRoom) setError('Please enter delivery room.');
+      else if (pickupOrDelivery === 'pickup' && deliveryRoom) setError('Room must be empty for pickup.');
+      else setError('Please fill all required fields.');
+      return;
+    }
+    // Prepare order details for confirmation
+    const order = {
+      requiredTime: requiredTime ? requiredTime.toISOString() : '',
+      finalPrice,
+      menuItems: selectedItems.map(id => {
+        const item = menuItems.find(i => String(i.id) === String(id));
+        return item ? { id: item.id, name: item.name, price: item.price } : null;
+      }).filter(Boolean),
+      pickupOrDelivery,
+      deliveryRoom: pickupOrDelivery === 'delivery' ? deliveryRoom : '',
+      notes,
+      studentId: studentIdInput,
+    };
+    setPendingOrder(order);
+    setConfirmOpen(true);
+  };
+
+  const handleConfirm = async () => {
     setSubmitting(true);
     setError('');
     setSuccess(false);
-    // Find the student document by studentId field (for new mode)
+    setConfirmOpen(false);
     let studentDocIdToUse = studentDocId;
     if (mode === 'new') {
       const selectedStudent = students.find(s => s.studentId === studentIdInput);
@@ -115,17 +156,6 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
         return;
       }
       studentDocIdToUse = selectedStudent.id;
-    }
-    // Validation for all required fields
-    if (!isFormValid()) {
-      if (!requiredTime) setError('Please select required time.');
-      else if (selectedItems.length === 0) setError('Please select at least one menu item.');
-      else if (mode === 'new' && !studentIdInput) setError('Student ID is required.');
-      else if (pickupOrDelivery === 'delivery' && !deliveryRoom) setError('Please enter delivery room.');
-      else if (pickupOrDelivery === 'pickup' && deliveryRoom) setError('Room must be empty for pickup.');
-      else setError('Please fill all required fields.');
-      setSubmitting(false);
-      return;
     }
     try {
       const order = {
@@ -142,11 +172,9 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
         status: 'new',
       };
       if (mode === 'edit' && studentDocId && orderId) {
-        // Update existing order
         const orderRef = doc(db, `students/${studentDocId}/orders/${orderId}`);
         await updateDoc(orderRef, order);
       } else {
-        // Add order as subdocument under student document by doc.id
         await addDoc(collection(db, `students/${studentDocIdToUse}/orders`), order);
       }
       setSuccess(true);
@@ -170,7 +198,7 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
         <ShoppingCartIcon color="primary" />
         <Typography variant="h5" sx={{ fontWeight: 'bold' }}>{mode === 'edit' ? 'Edit Order' : 'New Order'}</Typography>
       </Box>
-      <form onSubmit={handleSubmit}>
+      <form onSubmit={handleFormSubmit}>
         <Autocomplete
           options={students}
           getOptionLabel={option => option.studentId ? String(option.studentId) : ''}
@@ -203,12 +231,19 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
             }).join(', ')}
             disabled={isReadOnly}
           >
-            {menuItems.map(item => (
-              <MenuItem key={item.id} value={item.id} disabled={isReadOnly}>
-                <Checkbox checked={selectedItems.indexOf(item.id) > -1} disabled={isReadOnly} />
-                <ListItemText primary={`${item.name} (₪${item.price})`} />
-              </MenuItem>
-            ))}
+            {['Food', 'Snack', 'Beverage', 'Other'].map(category => {
+              const itemsInCategory = menuItems.filter(item => item.category === category);
+              if (itemsInCategory.length === 0) return null;
+              return [
+                <ListSubheader key={category}>{category}</ListSubheader>,
+                ...itemsInCategory.map(item => (
+                  <MenuItem key={item.id} value={item.id} disabled={isReadOnly}>
+                    <Checkbox checked={selectedItems.indexOf(item.id) > -1} disabled={isReadOnly} />
+                    <ListItemText primary={`${item.name} (₪${item.price})`} />
+                  </MenuItem>
+                ))
+              ];
+            })}
           </Select>
         </FormControl>
         <LocalizationProvider dateAdapter={AdapterDateFns}>
@@ -266,6 +301,31 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
           {mode === 'edit' ? 'Update Order' : 'Submit Order'}
         </Button>
       </form>
+      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
+        <DialogTitle>
+          <ShoppingCartIcon sx={{ mr: 1, verticalAlign: 'middle' }} color="primary" />
+          Confirm Order
+        </DialogTitle>
+        <DialogContent>
+          {pendingOrder && (
+            <Box>
+              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><PersonIcon sx={{mr:0.5}} fontSize="small"/>Student ID:</span></b> {pendingOrder.studentId}</Typography>
+              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><ShoppingCartIcon sx={{mr:0.5}} fontSize="small"/>Menu Items:</span></b> {pendingOrder.menuItems.map(i => `${i.name} (₪${i.price})`).join(', ')}</Typography>
+              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><AccessTimeIcon sx={{mr:0.5}} fontSize="small"/>Required Time:</span></b> {pendingOrder.requiredTime ? new Date(pendingOrder.requiredTime).toLocaleString() : ''}</Typography>
+              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><DeliveryDiningIcon sx={{mr:0.5}} fontSize="small"/>Type:</span></b> {pendingOrder.pickupOrDelivery}</Typography>
+              {pendingOrder.pickupOrDelivery === 'delivery' && (
+                <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><RoomIcon sx={{mr:0.5}} fontSize="small"/>Room:</span></b> {pendingOrder.deliveryRoom}</Typography>
+              )}
+              {pendingOrder.notes && <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><NotesIcon sx={{mr:0.5}} fontSize="small"/>Notes:</span></b> {pendingOrder.notes}</Typography>}
+              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><AttachMoneyIcon sx={{mr:0.5}} fontSize="small"/>Final Price:</span></b> ₪{pendingOrder.finalPrice}</Typography>
+            </Box>
+          )}
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={() => setConfirmOpen(false)} variant="outlined" color="error" startIcon={<CancelIcon />}>Cancel</Button>
+          <Button onClick={handleConfirm} color="primary" variant="contained" startIcon={<CheckCircleIcon />}>Confirm</Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 }
