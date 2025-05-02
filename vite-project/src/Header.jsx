@@ -11,7 +11,7 @@ function Header() {
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
   const [mode, setMode] = useState(() => localStorage.getItem('mode') || 'student');
-  const pages = mode === 'admin' ? ['Menu', 'Help', 'Students'] : ['Menu', 'Help'];
+  const pages = mode === 'admin' ? ['Menu', 'Help', 'Students', 'Dashboard'] : ['Menu', 'Help'];
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -89,7 +89,7 @@ function Header() {
               sx={{ display: { xs: 'block', md: 'none' } }}
             >
               {pages.map((page) => (
-                <MenuItem key={page} onClick={() => { handleCloseNavMenu(); navigate('/' + page.toLowerCase()); }}>
+                <MenuItem key={page} onClick={() => { handleCloseNavMenu(); navigate('/' + (page === 'Dashboard' ? 'admin/dashboard' : page.toLowerCase())); }}>
                   <Typography sx={{ textAlign: 'center' }}>{page} </Typography>
                 </MenuItem>
               ))}
@@ -121,7 +121,7 @@ function Header() {
             {pages.map((page) => (
               <Button
                 key={page}
-                onClick={() => { handleCloseNavMenu(); navigate('/' + page.toLowerCase()); }}
+                onClick={() => { handleCloseNavMenu(); navigate('/' + (page === 'Dashboard' ? 'admin/dashboard' : page.toLowerCase())); }}
                 sx={{ 
                   my: 2, 
                   color: 'white', 

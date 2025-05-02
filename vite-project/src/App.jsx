@@ -15,6 +15,7 @@ import MenuItemForm from './MenuItemForm';
 import { db } from "./firebase";
 import Students from './Students';
 import OrderForm from './OrderForm';
+import AdminDashboard from './components/AdminDashboard';
 
 const titleMap = {
   '/': 'Home - Ono cafeteria',
@@ -42,6 +43,7 @@ function App() {
         <Route path="/students" element={<Students />} />
         <Route path="/newOrder" element={<OrderForm studentId={"demo-student-id"} />} />
         <Route path="/editOrder/:studentDocId/:orderId" element={<EditOrderWrapper />} />
+        <Route path="/admin/dashboard" element={<AdminDashboard />} />
       </Routes>    
     </>
   )

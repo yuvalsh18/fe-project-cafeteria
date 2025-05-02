@@ -8,6 +8,7 @@ import adminMenuImg from './images/admin-menu.png';
 import studentsMngImg from './images/students-mng.png';
 import placeNewOrderImg from './images/place-new-order.png';
 import confirmOrderImg from './images/confirm-order.png';
+import adminDashboardImg from './images/admin-dashboard.png';
 
 export default function Help() {
   usePageTitle({ '/help': 'Help - Ono cafeteria' }, 'Ono cafeteria');
@@ -97,7 +98,19 @@ export default function Help() {
               Check the orders placed by students and update their status as needed to ensure smooth operations.
             </Typography>
             {/* <img src="/path/to/filler-image-orders.png" alt="Orders Page Screenshot" style={{ width: '100%', marginBottom: '16px' }} /> */}
-            <Typography variant="h6" gutterBottom>4. System Maintenance</Typography>
+            <Typography variant="h6" gutterBottom>4. Use the Admin Dashboard</Typography>
+            <Typography variant="body1" paragraph>
+              The <b>Admin Dashboard</b> provides a quick overview of the system's key statistics:
+              <ul>
+                <li><b>Students</b>: Total number of registered students.</li>
+                <li><b>Menu Items</b>: Total number of items available in the menu.</li>
+                <li><b>Orders</b>: See a breakdown of all orders by their status (New, In Making, In Delivery, Waiting for Pickup, Done) and the total number of orders.</li>
+                <li>Dashboard cards use color and icons for easy recognition. Use this page to monitor cafeteria activity at a glance.</li>
+                <li>If the dashboard shows a connection error, check your internet connection or Firestore permissions.</li>
+              </ul>
+            </Typography>
+            {renderImage(adminDashboardImg, "Admin Dashboard Screenshot")}
+            <Typography variant="h6" gutterBottom>5. System Maintenance</Typography>
             <Typography variant="body1" paragraph>
               Regularly check for system updates or issues and address them promptly to maintain efficiency.
             </Typography>
