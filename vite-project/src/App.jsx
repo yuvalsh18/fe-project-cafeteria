@@ -10,7 +10,7 @@ import { collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firest
 import Home from './Home';
 import Help from './Help';
 import Menu from './Menu';
-import usePageTitle from './usePageTitle';
+import usePageTitle from './hooks/usePageTitle';
 import MenuItemForm from './MenuItemForm';
 import { db } from "./firebase";
 import Students from './Students';

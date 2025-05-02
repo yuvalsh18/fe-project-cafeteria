@@ -20,8 +20,16 @@ import PersonIcon from '@mui/icons-material/Person';
 import CancelIcon from '@mui/icons-material/Cancel';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ListSubheader from '@mui/material/ListSubheader';
+import OrderConfirmationDialog from './components/OrderConfirmationDialog';
+import usePageTitle from './hooks/usePageTitle';
 
 export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
+  usePageTitle(
+    mode === 'edit'
+      ? { '/editOrder/:studentDocId/:orderId': 'Edit Order - Ono cafeteria' }
+      : { '/newOrder': 'New Order - Ono cafeteria' },
+    'Ono cafeteria'
+  );
   const [menuItems, setMenuItems] = useState([]);
   const [selectedItems, setSelectedItems] = useState([]);
   const [pickupOrDelivery, setPickupOrDelivery] = useState('pickup');
@@ -301,31 +309,12 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
           {mode === 'edit' ? 'Update Order' : 'Submit Order'}
         </Button>
       </form>
-      <Dialog open={confirmOpen} onClose={() => setConfirmOpen(false)}>
-        <DialogTitle>
-          <ShoppingCartIcon sx={{ mr: 1, verticalAlign: 'middle' }} color="primary" />
-          Confirm Order
-        </DialogTitle>
-        <DialogContent>
-          {pendingOrder && (
-            <Box>
-              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><PersonIcon sx={{mr:0.5}} fontSize="small"/>Student ID:</span></b> {pendingOrder.studentId}</Typography>
-              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><ShoppingCartIcon sx={{mr:0.5}} fontSize="small"/>Menu Items:</span></b> {pendingOrder.menuItems.map(i => `${i.name} (₪${i.price})`).join(', ')}</Typography>
-              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><AccessTimeIcon sx={{mr:0.5}} fontSize="small"/>Required Time:</span></b> {pendingOrder.requiredTime ? new Date(pendingOrder.requiredTime).toLocaleString() : ''}</Typography>
-              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><DeliveryDiningIcon sx={{mr:0.5}} fontSize="small"/>Type:</span></b> {pendingOrder.pickupOrDelivery}</Typography>
-              {pendingOrder.pickupOrDelivery === 'delivery' && (
-                <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><RoomIcon sx={{mr:0.5}} fontSize="small"/>Room:</span></b> {pendingOrder.deliveryRoom}</Typography>
-              )}
-              {pendingOrder.notes && <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><NotesIcon sx={{mr:0.5}} fontSize="small"/>Notes:</span></b> {pendingOrder.notes}</Typography>}
-              <Typography><b><span style={{display:'inline-flex',alignItems:'center'}}><AttachMoneyIcon sx={{mr:0.5}} fontSize="small"/>Final Price:</span></b> ₪{pendingOrder.finalPrice}</Typography>
-            </Box>
-          )}
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={() => setConfirmOpen(false)} variant="outlined" color="error" startIcon={<CancelIcon />}>Cancel</Button>
-          <Button onClick={handleConfirm} color="primary" variant="contained" startIcon={<CheckCircleIcon />}>Confirm</Button>
-        </DialogActions>
-      </Dialog>
+      <OrderConfirmationDialog
+        open={confirmOpen}
+        onClose={() => setConfirmOpen(false)}
+        onConfirm={handleConfirm}
+        order={pendingOrder}
+      />
     </Box>
   );
 }

@@ -1,48 +1,20 @@
 import { Typography, Box } from '@mui/material'
-import React, { useEffect, useState } from 'react'
+import React from 'react'
 import AdminHome from './AdminHome';
 import StudentHome from './StudentHome';
+import useMode from './hooks/useMode';
+import usePageTitle from './hooks/usePageTitle';
 
 export default function Home() {
-  const [mode, setMode] = useState(() => localStorage.getItem('mode') || 'student');
-
-  useEffect(() => {
-    // Listen for changes to mode in localStorage (from Header)
-    const onStorage = () => {
-      setMode(localStorage.getItem('mode') || 'student');
-    };
-    window.addEventListener('storage', onStorage);
-
-    // Listen for changes in the same tab (Header changes state, not storage event)
-    const origSetItem = localStorage.setItem;
-    localStorage.setItem = function(key, value) {
-      origSetItem.apply(this, arguments);
-      if (key === 'mode') {
-        window.dispatchEvent(new Event('mode-changed'));
-      }
-    };
-    const onModeChanged = () => setMode(localStorage.getItem('mode') || 'student');
-    window.addEventListener('mode-changed', onModeChanged);
-
-    return () => {
-      window.removeEventListener('storage', onStorage);
-      window.removeEventListener('mode-changed', onModeChanged);
-      localStorage.setItem = origSetItem;
-    };
-  }, []);
+  // Use custom hook for mode
+  usePageTitle({ '/': 'Home - Ono cafeteria' }, 'Ono cafeteria');
+  const mode = useMode();
 
   return (
     <Box sx={{ mt: 4, textAlign: 'center' }}>
-      {mode === 'student' && (
-        <>
-          < StudentHome />
-        </>
-      )}
-      {mode === 'admin' && (
-        <>
-          < AdminHome />
-        </>
-      )}
+      {/* Render the appropriate home page based on mode */}
+      {mode === 'student' && <StudentHome />}
+      {mode === 'admin' && <AdminHome />}
     </Box>
   );
 }

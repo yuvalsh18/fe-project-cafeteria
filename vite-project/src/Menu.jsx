@@ -12,37 +12,16 @@ import { collection, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
 import EditIcon from '@mui/icons-material/Edit';
 import DeleteIcon from '@mui/icons-material/Delete';
+import useMode from './hooks/useMode';
+import MenuTable from './components/MenuTable';
+import usePageTitle from './hooks/usePageTitle';
 
 export default function Menu() {
-  const [isAdmin, setIsAdmin] = useState(false);
+  usePageTitle({ '/menu': 'Menu - Ono cafeteria' }, 'Ono cafeteria');
+  const isAdmin = useMode() === 'admin';
   const [rows, setRows] = useState([]);
   const [loading, setLoading] = useState(true); // loading state
   const navigate = useNavigate();
-
-  useEffect(() => {
-    const handleStorageChange = () => {
-      const mode = localStorage.getItem('mode');
-      setIsAdmin(mode === 'admin');
-    };
-
-    // Initial check
-    handleStorageChange();
-
-    // Listen for changes to localStorage (cross-tab)
-    window.addEventListener('storage', handleStorageChange);
-
-    // Listen for changes in this tab
-    const origSetItem = localStorage.setItem;
-    localStorage.setItem = function(key, value) {
-      origSetItem.apply(this, arguments);
-      if (key === 'mode') handleStorageChange();
-    };
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      localStorage.setItem = origSetItem;
-    };
-  }, []);
 
   useEffect(() => {
     // Listen to Firestore menuItems collection
@@ -74,63 +53,7 @@ export default function Menu() {
     row => row.category !== "Snack" && row.category !== "Food" && row.category !== "Beverage"
   );
 
-  // Helper to render a table for a category
-  const renderTable = (title, data) => (
-    <>
-      <Typography variant="h6" sx={{ mt: 3, mb: 1 }}>{title}</Typography>
-      <TableContainer component={Paper} sx={{ mb: 2 }}>
-        <Table sx={{ minWidth: 650 }} aria-label={`${title} table`}>
-          <TableHead>
-            <TableRow>
-              <TableCell sx={{ fontWeight: 'bold' }}>Item</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Price</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Availability</TableCell>
-              <TableCell align="right" sx={{ fontWeight: 'bold' }}>Category</TableCell>
-              {isAdmin && <TableCell align="right" sx={{ fontWeight: 'bold' }}>Actions</TableCell>}
-            </TableRow>
-          </TableHead>
-          <TableBody>
-            {data.map((row) => (
-              <TableRow
-                key={row.itemId}
-                sx={{ '&:last-child td, &:last-child th': { border: 0 } }}
-              >
-                <TableCell component="th" scope="row">
-                  {row.item}
-                </TableCell>
-                <TableCell align="right">
-                  ₪{row.price}
-                </TableCell>
-                <TableCell align="right">{row.availability}</TableCell>
-                <TableCell align="right">{row.category}</TableCell>
-                {isAdmin && (
-                  <TableCell align="right">
-                    <Button 
-                      variant="contained"
-                      color="primary"
-                      onClick={() => navigate(`/editMenuItem/${row.itemId}`)}
-                      sx={{ minWidth: 0, p: 1, mr: 1 }}
-                    >
-                      <EditIcon />
-                    </Button>
-                    <Button 
-                      variant="contained"
-                      color="error"
-                      onClick={() => handleDelete(row.itemId)}
-                      data-itemid={row.itemId}
-                      sx={{ minWidth: 0, p: 1, ml: 1 }}
-                    >
-                      <DeleteIcon />
-                    </Button>
-                  </TableCell>
-                )}
-              </TableRow>
-            ))}
-          </TableBody>
-        </Table>
-      </TableContainer>
-    </>
-  );
+  const handleEdit = (itemId) => navigate(`/editMenuItem/${itemId}`);
 
   const handleDelete = async (itemId) => {
     // Accept both string and number for itemId
@@ -182,10 +105,10 @@ export default function Menu() {
           </Typography>
         ) : (
           <>
-            {renderTable("Snacks", snacks)}
-            {renderTable("Food", food)}
-            {renderTable("Beverage", beverage)}
-            {renderTable("Other", other)}
+            <MenuTable title="Snacks" data={snacks} isAdmin={isAdmin} onEdit={handleEdit} onDelete={handleDelete} />
+            <MenuTable title="Food" data={food} isAdmin={isAdmin} onEdit={handleEdit} onDelete={handleDelete} />
+            <MenuTable title="Beverage" data={beverage} isAdmin={isAdmin} onEdit={handleEdit} onDelete={handleDelete} />
+            <MenuTable title="Other" data={other} isAdmin={isAdmin} onEdit={handleEdit} onDelete={handleDelete} />
           </>
         )}
       </Box>

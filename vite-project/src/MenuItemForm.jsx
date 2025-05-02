@@ -14,8 +14,15 @@ import {
 import { useNavigate, useParams } from 'react-router-dom';
 import { doc, getDoc, updateDoc, collection, addDoc, getDocs, query, where } from "firebase/firestore";
 import { db } from "./firebase";
+import usePageTitle from './hooks/usePageTitle';
 
 export default function MenuItemForm({ editMode = false }) {
+  usePageTitle(
+    editMode
+      ? { '/editMenuItem/:itemId': 'Edit Menu Item - Ono cafeteria' }
+      : { '/addMenuItem': 'New Menu Item - Ono cafeteria' },
+    'Ono cafeteria'
+  );
   const { itemId } = useParams();
   const [itemName, setItemName] = useState('');
   const [price, setPrice] = useState('');

@@ -4,25 +4,14 @@ import { db } from './firebase';
 import {
   Box,
   Typography,
-  Table,
-  TableBody,
-  TableCell,
-  TableContainer,
-  TableHead,
-  TableRow,
-  Paper,
-  TextField,
-  Button,
-  IconButton,
-  Stack
+  Paper
 } from '@mui/material';
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
+import StudentForm from './components/StudentForm';
+import StudentTable from './components/StudentTable';
+import usePageTitle from './hooks/usePageTitle';
 
 function Students() {
+  usePageTitle({ '/students': 'Students - Ono cafeteria' }, 'Ono cafeteria');
   const [students, setStudents] = useState([]);
   const [editingId, setEditingId] = useState(null);
   const [form, setForm] = useState({ studentId: '', firstName: '', lastName: '', phone: '', email: '' });
@@ -110,113 +99,21 @@ function Students() {
   return (
     <Box sx={{ p: 4 }}>
       <Typography variant="h4" gutterBottom>Students</Typography>
-      {error && (
-        <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
-      )}
       <Paper sx={{ p: 2, maxWidth: 900, mx: 'auto', mb: 3 }} elevation={3}>
-        <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="center">
-          <TextField
-            name="studentId"
-            label="Student ID"
-            value={form.studentId}
-            onChange={handleChange}
-            size="small"
-          />
-          <TextField
-            name="firstName"
-            label="First Name"
-            value={form.firstName}
-            onChange={handleChange}
-            size="small"
-          />
-          <TextField
-            name="lastName"
-            label="Last Name"
-            value={form.lastName}
-            onChange={handleChange}
-            size="small"
-          />
-          <TextField
-            name="phone"
-            label="Phone"
-            value={form.phone}
-            onChange={handleChange}
-            size="small"
-          />
-          <TextField
-            name="email"
-            label="Email"
-            value={form.email}
-            onChange={handleChange}
-            size="small"
-          />
-          {editingId ? (
-            <>
-              <Button
-                variant="contained"
-                color="success"
-                startIcon={<SaveIcon />}
-                onClick={handleUpdate}
-              >
-                Update
-              </Button>
-              <Button
-                variant="outlined"
-                color="inherit"
-                startIcon={<CancelIcon />}
-                onClick={() => { setEditingId(null); setForm({ studentId: '', firstName: '', lastName: '', phone: '', email: '' }); }}
-              >
-                Cancel
-              </Button>
-            </>
-          ) : (
-            <Button
-              variant="contained"
-              color="primary"
-              startIcon={<PersonAddAltIcon />}
-              onClick={handleAdd}
-            >
-              Add
-            </Button>
-          )}
-        </Stack>
+        <StudentForm
+          form={form}
+          editingId={editingId}
+          error={error}
+          onChange={handleChange}
+          onAdd={handleAdd}
+          onUpdate={handleUpdate}
+          onCancel={() => { setEditingId(null); setForm({ studentId: '', firstName: '', lastName: '', phone: '', email: '' }); }}
+        />
       </Paper>
       {loading ? (
         <Typography>Loading...</Typography>
       ) : (
-        <TableContainer component={Paper} sx={{ mb: 3 }}>
-          <Table>
-            <TableHead>
-              <TableRow>
-                <TableCell>Student ID</TableCell>
-                <TableCell>First Name</TableCell>
-                <TableCell>Last Name</TableCell>
-                <TableCell>Phone</TableCell>
-                <TableCell>Email</TableCell>
-                <TableCell align="center">Actions</TableCell>
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {students.map((student) => (
-                <TableRow key={student.id}>
-                  <TableCell>{student.studentId}</TableCell>
-                  <TableCell>{student.firstName}</TableCell>
-                  <TableCell>{student.lastName}</TableCell>
-                  <TableCell>{student.phone}</TableCell>
-                  <TableCell>{student.email}</TableCell>
-                  <TableCell align="center">
-                    <IconButton color="primary" onClick={() => handleEdit(student)}>
-                      <EditIcon />
-                    </IconButton>
-                    <IconButton color="error" onClick={() => handleDelete(student.id)}>
-                      <DeleteIcon />
-                    </IconButton>
-                  </TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
-        </TableContainer>
+        <StudentTable students={students} onEdit={handleEdit} onDelete={handleDelete} />
       )}
     </Box>
   );

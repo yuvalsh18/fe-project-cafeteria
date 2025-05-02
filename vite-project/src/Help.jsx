@@ -1,6 +1,8 @@
 import { Typography, Box } from '@mui/material';
 import React, { useEffect, useState } from 'react';
 import Dialog from '@mui/material/Dialog';
+import useMode from './hooks/useMode';
+import usePageTitle from './hooks/usePageTitle';
 import studentMenuImg from './images/student-menu.png';
 import adminMenuImg from './images/admin-menu.png';
 import studentsMngImg from './images/students-mng.png';
@@ -8,7 +10,8 @@ import placeNewOrderImg from './images/place-new-order.png';
 import confirmOrderImg from './images/confirm-order.png';
 
 export default function Help() {
-  const [mode, setMode] = useState(() => localStorage.getItem('mode') || 'student');
+  usePageTitle({ '/help': 'Help - Ono cafeteria' }, 'Ono cafeteria');
+  const mode = useMode();
   const [openImg, setOpenImg] = useState(null); // Track which image is open
 
   useEffect(() => {
