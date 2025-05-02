@@ -16,6 +16,7 @@ import { db } from "./firebase";
 import Students from './Students';
 import OrderForm from './OrderForm';
 import AdminDashboard from './components/AdminDashboard';
+import useMode from './hooks/useMode';
 
 const titleMap = {
   '/': 'Home - Ono cafeteria',
@@ -29,13 +30,14 @@ const titleMap = {
 
 function App() {
   usePageTitle(titleMap, 'Ono cafeteria')
+  const mode = useMode();
 
   return (
     <>
       <Header />
 
       <Routes>
-        <Route path='/' element={<Home />} />
+        <Route path='/' element={<Home mode={mode} />} />
         <Route path="/help" element={<Help />} />
         <Route path="/menu" element={<Menu />} />
         <Route path="/addMenuItem" element={<MenuItemForm />} />

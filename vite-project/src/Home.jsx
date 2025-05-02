@@ -5,10 +5,9 @@ import StudentHome from './StudentHome';
 import useMode from './hooks/useMode';
 import usePageTitle from './hooks/usePageTitle';
 
-export default function Home() {
+export default function Home({ mode }) {
   // Use custom hook for mode
   usePageTitle({ '/': 'Home - Ono cafeteria' }, 'Ono cafeteria');
-  const mode = useMode();
 
   return (
     <Box sx={{ mt: 4, textAlign: 'center' }}>

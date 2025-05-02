@@ -5,12 +5,13 @@ import Button from '@mui/material/Button';
 import { Box, Container, IconButton, Menu, MenuItem, ToggleButton, ToggleButtonGroup } from '@mui/material';
 import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
+import useMode from './hooks/useMode';
 import { useState } from 'react';
 
 function Header() {
   const navigate = useNavigate();
   const [anchorElNav, setAnchorElNav] = useState(null);
-  const [mode, setMode] = useState(() => localStorage.getItem('mode') || 'student');
+  const mode = useMode();
   const pages = mode === 'admin' ? ['Menu', 'Help', 'Students', 'Dashboard'] : ['Menu', 'Help'];
 
   const handleOpenNavMenu = (event) => {
@@ -22,10 +23,9 @@ function Header() {
   };
 
   const handleModeChange = (event, newMode) => {
-    if (newMode) {
-      setMode(newMode);
+    if (newMode && newMode !== mode) {
       localStorage.setItem('mode', newMode);
-      window.dispatchEvent(new Event('mode-changed')); // Notify Home to update
+      window.dispatchEvent(new Event('mode-changed'));
     }
   };
 
