@@ -9,6 +9,9 @@ import studentsMngImg from './images/students-mng.png';
 import placeNewOrderImg from './images/place-new-order.png';
 import confirmOrderImg from './images/confirm-order.png';
 import adminDashboardImg from './images/admin-dashboard.png';
+import adminsOrdersImg from './images/admins-orders-page.png';
+import studentsOrdersImg from './images/students-orders-page.png';
+import adminOrderDialogImg from './images/admin-order-dialog.png';
 
 export default function Help() {
   usePageTitle({ '/help': 'Help - Ono cafeteria' }, 'Ono cafeteria');
@@ -70,7 +73,12 @@ export default function Help() {
               Review your order details and confirm your submission. You will see a confirmation message once the order is placed successfully.
             </Typography>
             {renderImage(confirmOrderImg, "Order Confirmation Screenshot")}
-            <Typography variant="h6" gutterBottom>4. Get Help</Typography>
+            <Typography variant="h6" gutterBottom>4. Track Your Orders</Typography>
+            <Typography variant="body1" paragraph>
+              On the Student Home page, you can view all your orders grouped by their status (New, In Making, In Delivery, Waiting for Pickup, Done). This helps you keep track of your order progress.
+            </Typography>
+            {renderImage(studentsOrdersImg, "Student Orders Page Screenshot")}
+            <Typography variant="h6" gutterBottom>5. Get Help</Typography>
             <Typography variant="body1" paragraph>
               If you encounter any issues, contact the cafeteria staff for assistance.
             </Typography>
@@ -95,10 +103,15 @@ export default function Help() {
             {renderImage(studentsMngImg, "Students Page Screenshot")}
             <Typography variant="h6" gutterBottom>3. Monitor and Update Orders</Typography>
             <Typography variant="body1" paragraph>
-              Check the orders placed by students and update their status as needed to ensure smooth operations.
+              Check the orders placed by students and update their status as needed to ensure smooth operations. The Admin Orders page shows all orders grouped by their status for easy management.
             </Typography>
-            {/* <img src="/path/to/filler-image-orders.png" alt="Orders Page Screenshot" style={{ width: '100%', marginBottom: '16px' }} /> */}
-            <Typography variant="h6" gutterBottom>4. Use the Admin Dashboard</Typography>
+            {renderImage(adminsOrdersImg, "Admin Orders Page Screenshot")}
+            <Typography variant="h6" gutterBottom>4. View and Edit Order Details</Typography>
+            <Typography variant="body1" paragraph>
+              Click on any order card to open the order dialog box. Here you can view all order details, change the order status, or edit the order if needed.
+            </Typography>
+            {renderImage(adminOrderDialogImg, "Admin Order Dialog Screenshot")}
+            <Typography variant="h6" gutterBottom>5. Use the Admin Dashboard</Typography>
             <Typography variant="body1" paragraph>
               The <b>Admin Dashboard</b> provides a quick overview of the system's key statistics:
               <ul>
@@ -110,7 +123,7 @@ export default function Help() {
               </ul>
             </Typography>
             {renderImage(adminDashboardImg, "Admin Dashboard Screenshot")}
-            <Typography variant="h6" gutterBottom>5. System Maintenance</Typography>
+            <Typography variant="h6" gutterBottom>6. System Maintenance</Typography>
             <Typography variant="body1" paragraph>
               Regularly check for system updates or issues and address them promptly to maintain efficiency.
             </Typography>
