@@ -22,6 +22,7 @@ import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import ListSubheader from '@mui/material/ListSubheader';
 import OrderConfirmationDialog from './components/OrderConfirmationDialog';
 import usePageTitle from './hooks/usePageTitle';
+import useMode from './hooks/useMode';
 
 export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
   usePageTitle(
@@ -44,6 +45,8 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
   const [orderStatus, setOrderStatus] = useState('new');
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingOrder, setPendingOrder] = useState(null);
+  const [statusChanged, setStatusChanged] = useState(false);
+  const userMode = useMode();
 
   // Fetch menu items from Firestore
   useEffect(() => {
@@ -133,7 +136,60 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
       else setError('Please fill all required fields.');
       return;
     }
-    // Prepare order details for confirmation
+    // For edit mode, check if only status changed and skip confirmation dialog
+    if (mode === 'edit') {
+      (async () => {
+        const orderRef = doc(db, `students/${studentDocId}/orders/${orderId}`);
+        const orderSnap = await getDoc(orderRef);
+        if (orderSnap.exists()) {
+          const prev = orderSnap.data();
+          const prevStatus = prev.status || 'new';
+          const fieldsToCheck = ['menuItems', 'pickupOrDelivery', 'deliveryRoom', 'requiredTime', 'notes', 'finalPrice'];
+          const onlyStatusChanged =
+            prevStatus !== orderStatus &&
+            fieldsToCheck.every(f => {
+              if (f === 'menuItems') {
+                const prevIds = (prev.menuItems || []).map(i => i.id).sort();
+                const currIds = selectedItems.slice().sort();
+                return JSON.stringify(prevIds) === JSON.stringify(currIds);
+              }
+              if (f === 'requiredTime') {
+                const prevTime = prev.requiredTime ? new Date(prev.requiredTime).toISOString() : '';
+                const currTime = requiredTime ? requiredTime.toISOString() : '';
+                return prevTime === currTime;
+              }
+              if (f === 'finalPrice') {
+                return Number(prev.finalPrice) === Number(finalPrice);
+              }
+              return (prev[f] || '') === (eval(f) || '');
+            });
+          if (onlyStatusChanged) {
+            // Directly update status and show short confirmation, skip dialog
+            await updateDoc(orderRef, { ...prev, status: orderStatus });
+            setStatusChanged(true);
+            setTimeout(() => setStatusChanged(false), 2000);
+            return;
+          }
+        }
+        // If not only status changed, show confirmation dialog as usual
+        const order = {
+          requiredTime: requiredTime ? requiredTime.toISOString() : '',
+          finalPrice,
+          menuItems: selectedItems.map(id => {
+            const item = menuItems.find(i => String(i.id) === String(id));
+            return item ? { id: item.id, name: item.name, price: item.price } : null;
+          }).filter(Boolean),
+          pickupOrDelivery,
+          deliveryRoom: pickupOrDelivery === 'delivery' ? deliveryRoom : '',
+          notes,
+          studentId: studentIdInput,
+        };
+        setPendingOrder(order);
+        setConfirmOpen(true);
+      })();
+      return;
+    }
+    // For new orders, show confirmation dialog as usual
     const order = {
       requiredTime: requiredTime ? requiredTime.toISOString() : '',
       finalPrice,
@@ -166,6 +222,37 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
       studentDocIdToUse = selectedStudent.id;
     }
     try {
+      let onlyStatusChanged = false;
+      let prev = null;
+      if (mode === 'edit' && studentDocId && orderId) {
+        // Fetch current order data
+        const orderRef = doc(db, `students/${studentDocId}/orders/${orderId}`);
+        const orderSnap = await getDoc(orderRef);
+        if (orderSnap.exists()) {
+          prev = orderSnap.data();
+          // Check if only status changed
+          const prevStatus = prev.status || 'new';
+          const fieldsToCheck = ['menuItems', 'pickupOrDelivery', 'deliveryRoom', 'requiredTime', 'notes', 'finalPrice'];
+          onlyStatusChanged =
+            prevStatus !== orderStatus &&
+            fieldsToCheck.every(f => {
+              if (f === 'menuItems') {
+                const prevIds = (prev.menuItems || []).map(i => i.id).sort();
+                const currIds = selectedItems.slice().sort();
+                return JSON.stringify(prevIds) === JSON.stringify(currIds);
+              }
+              if (f === 'requiredTime') {
+                const prevTime = prev.requiredTime ? new Date(prev.requiredTime).toISOString() : '';
+                const currTime = requiredTime ? requiredTime.toISOString() : '';
+                return prevTime === currTime;
+              }
+              if (f === 'finalPrice') {
+                return Number(prev.finalPrice) === Number(finalPrice);
+              }
+              return (prev[f] || '') === (eval(f) || '');
+            });
+        }
+      }
       const order = {
         ordertimestamp: Timestamp.now(),
         requiredTime: requiredTime ? requiredTime.toISOString() : '',
@@ -177,15 +264,22 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
         pickupOrDelivery,
         deliveryRoom: pickupOrDelivery === 'delivery' ? deliveryRoom : '',
         notes,
-        status: 'new',
+        status: mode === 'edit' ? orderStatus : 'new',
       };
       if (mode === 'edit' && studentDocId && orderId) {
         const orderRef = doc(db, `students/${studentDocId}/orders/${orderId}`);
         await updateDoc(orderRef, order);
+        if (onlyStatusChanged) {
+          setStatusChanged(true);
+          setSuccess(false); // Don't show the full success message
+          setTimeout(() => setStatusChanged(false), 2000);
+        } else {
+          setSuccess(true);
+        }
       } else {
         await addDoc(collection(db, `students/${studentDocIdToUse}/orders`), order);
+        setSuccess(true);
       }
-      setSuccess(true);
       setSelectedItems([]);
       setPickupOrDelivery('pickup');
       setDeliveryRoom('');
@@ -198,7 +292,8 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
     setSubmitting(false);
   };
 
-  const isReadOnly = mode === 'edit' && orderStatus !== 'new';
+  // Only read-only if not admin and editing a non-new order
+  const isReadOnly = userMode !== 'admin' && mode === 'edit' && orderStatus !== 'new';
 
   return (
     <Box sx={{ maxWidth: 500, mx: 'auto', mt: 5, p: 3, bgcolor: 'background.default', color: 'text.primary', borderRadius: 2, boxShadow: 3 }}>
@@ -279,6 +374,33 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
             <MenuItem value="delivery">Delivery</MenuItem>
           </Select>
         </FormControl>
+        {/* Order Status Select for Edit Mode */}
+        {mode === 'edit' && (
+          <FormControl fullWidth sx={{ mb: 2 }}>
+            <InputLabel id="order-status-label">Order Status</InputLabel>
+            <Select
+              labelId="order-status-label"
+              value={orderStatus}
+              label="Order Status"
+              onChange={e => setOrderStatus(e.target.value)}
+              disabled={userMode !== 'admin'}
+            >
+              <MenuItem value="new">New</MenuItem>
+              <MenuItem value="in making">In Making</MenuItem>
+              <MenuItem value="in delivery">In Delivery</MenuItem>
+              <MenuItem value="waiting for pickup">Waiting for Pickup</MenuItem>
+              <MenuItem value="done">Done</MenuItem>
+            </Select>
+          </FormControl>
+        )}
+        {statusChanged && (
+          <Typography color="success.main" sx={{ mb: 2, fontWeight: 500 }}>
+            Order status updated
+          </Typography>
+        )}
+        {success && !statusChanged && (
+          <Typography color="primary" sx={{ mb: 2 }}>Order submitted!</Typography>
+        )}
         {pickupOrDelivery === 'delivery' && (
           <TextField
             label={<span><RoomIcon fontSize="small" sx={{ mr: 1, verticalAlign: 'middle' }} />Delivery Room</span>}
@@ -304,7 +426,7 @@ export default function OrderForm({ mode = 'new', studentDocId, orderId }) {
           <Typography variant="subtitle1">Final Price: ₪{finalPrice}</Typography>
         </Box>
         {error && <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>}
-        {success && <Typography color="primary" sx={{ mb: 2 }}>Order submitted!</Typography>}
+        {success && !statusChanged && <Typography color="primary" sx={{ mb: 2 }}>Order submitted!</Typography>}
         <Button type="submit" variant="contained" color="primary" fullWidth disabled={submitting || isReadOnly} startIcon={<ShoppingCartIcon />}>
           {mode === 'edit' ? 'Update Order' : 'Submit Order'}
         </Button>
