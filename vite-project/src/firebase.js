@@ -14,4 +14,3 @@ export const app = initializeApp(firebaseConfig);
 export const db  = getFirestore(app);
 
 setLogLevel("error");
-console.log("Firebase initialized with config:", firebaseConfig);
