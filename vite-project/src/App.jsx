@@ -18,6 +18,7 @@ import OrderForm from './OrderForm';
 import AdminDashboard from './components/AdminDashboard';
 import useMode from './hooks/useMode';
 import AdminHome from './AdminHome';
+import RequireAuth from './RequireAuth';
 
 const titleMap = {
   '/': 'Home - Ono cafeteria',
@@ -34,21 +35,22 @@ function App() {
   const mode = useMode();
 
   return (
-    <>
-      <Header />
-
-      <Routes>
-        <Route path='/' element={<Home mode={mode} />} />
-        <Route path="/help" element={<Help />} />
-        <Route path="/menu" element={<Menu />} />
-        <Route path="/addMenuItem" element={<MenuItemForm />} />
-        <Route path="/editMenuItem/:itemId" element={<MenuItemForm editMode={true} />} />
-        <Route path="/students" element={<Students />} />
-        <Route path="/newOrder" element={<OrderForm studentId={"demo-student-id"} />} />
-        <Route path="/editOrder/:studentDocId/:orderId" element={<EditOrderWrapper />} />
-        <Route path="/admin/dashboard" element={<AdminDashboard />} />
-        <Route path="/admin" element={<AdminHome />} />
-      </Routes>    
+    <> 
+      <RequireAuth>
+        <Header />
+        <Routes>
+          <Route path='/' element={<Home mode={mode} />} />
+          <Route path="/help" element={<Help />} />
+          <Route path="/menu" element={<Menu />} />
+          <Route path="/addMenuItem" element={<MenuItemForm />} />
+          <Route path="/editMenuItem/:itemId" element={<MenuItemForm editMode={true} />} />
+          <Route path="/students" element={<Students />} />
+          <Route path="/newOrder" element={<OrderForm studentId={"demo-student-id"} />} />
+          <Route path="/editOrder/:studentDocId/:orderId" element={<EditOrderWrapper />} />
+          <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/admin" element={<AdminHome />} />
+        </Routes>
+      </RequireAuth>    
     </>
   )
 }
