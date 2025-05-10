@@ -7,6 +7,9 @@ import MenuIcon from '@mui/icons-material/Menu';
 import { useNavigate } from 'react-router-dom';
 import useMode from './hooks/useMode';
 import { useState } from 'react';
+import LogoutIcon from '@mui/icons-material/Logout';
+import { signOut } from 'firebase/auth';
+import { auth } from './firebase';
 
 function Header() {
   const navigate = useNavigate();
@@ -137,7 +140,7 @@ function Header() {
             ))}
           </Box>
           {/* Mode Switcher */}
-          <Box sx={{ ml: 2 }}>
+          <Box sx={{ ml: 2, display: 'flex', alignItems: 'center' }}>
             <ToggleButtonGroup
               value={mode}
               exclusive
@@ -192,6 +195,14 @@ function Header() {
                 Admin
               </ToggleButton>
             </ToggleButtonGroup>
+            <IconButton
+              color="inherit"
+              aria-label="logout"
+              sx={{ ml: 1 }}
+              onClick={() => signOut(auth)}
+            >
+              <LogoutIcon />
+            </IconButton>
           </Box>
         </Toolbar>
       </Container>

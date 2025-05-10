@@ -1,48 +1,64 @@
-import React, { useEffect, useRef } from 'react';
-import { EmailAuthProvider /*, GoogleAuthProvider */ } from 'firebase/auth';
-import * as firebaseui from 'firebaseui';
+import React, { useState, useEffect } from 'react';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import CircularProgress from '@mui/material/CircularProgress';
+import { signInWithEmailAndPassword } from 'firebase/auth';
 import { auth } from '../firebase';
-import 'firebaseui/dist/firebaseui.css';
+import { useAuthState } from 'react-firebase-hooks/auth';
 
 export default function LoginModal() {
-    console.log('LoginModal: component rendered');
-    const uiRef = useRef(null);
-    
-    useEffect(() => {
-        console.log('LoginModal: useEffect running');
-        if (!uiRef.current) {
-            uiRef.current = new firebaseui.auth.AuthUI(auth);
-        } else {
-            uiRef.current.reset();
-        }
-        uiRef.current.start('#firebaseui-auth-container', {
-            signInOptions: [
-                {
-                    provider: EmailAuthProvider.PROVIDER_ID,
-                    disableSignUp: { status: true }
-                }
-                // GoogleAuthProvider.PROVIDER_ID,
-            ],
-            callbacks: {
-                signInSuccessWithAuthResult: (authResult, redirectUrl) => {
-                    console.log('LoginModal: signInSuccessWithAuthResult', { authResult, redirectUrl });
-                    return false;
-                },
-                signInFailure: (error) => {
-                    console.error('LoginModal: signInFailure', error);
-                },
-                uiShown: () => {
-                    console.log('LoginModal: FirebaseUI shown');
-                }
-            },
-        });
-        return () => {
-            if (uiRef.current) {
-                console.log('LoginModal: cleaning up FirebaseUI instance');
-                uiRef.current.reset();
-            }
-        };
-    }, []);
+  const [user, loadingAuth, errorAuth] = useAuthState(auth);
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
+  const [loginLoading, setLoginLoading] = useState(false); // renamed to avoid conflict
+  const [error, setError] = useState('');
 
-    return <div id="firebaseui-auth-container" />;
+  const handleLogin = async () => {
+    setLoginLoading(true);
+    setError('');
+    try {
+      await signInWithEmailAndPassword(auth, email, password);
+    } catch (err) {
+      setError(err.message);
+    } finally {
+      setLoginLoading(false);
+    }
+  };
+
+  // Only show modal if not authenticated
+  return (
+    <Dialog open={!user}>
+      <DialogTitle>Login</DialogTitle>
+      <DialogContent>
+        <TextField
+          autoFocus
+          margin="dense"
+          label="Email Address"
+          type="email"
+          fullWidth
+          variant="standard"
+          value={email}
+          onChange={e => setEmail(e.target.value)}
+        />
+        <TextField
+          margin="dense"
+          label="Password"
+          type="password"
+          fullWidth
+          variant="standard"
+          value={password}
+          onChange={e => setPassword(e.target.value)}
+        />
+        {error && <div style={{ color: 'red', marginTop: 8 }}>{error}</div>}
+        {loginLoading && <CircularProgress size={24} style={{ marginTop: 8 }} />}
+      </DialogContent>
+      <DialogActions>
+        <Button onClick={handleLogin} disabled={loginLoading || !email || !password} variant="contained">Login</Button>
+      </DialogActions>
+    </Dialog>
+  );
 }
