@@ -12,7 +12,6 @@ import LocalShippingIcon from '@mui/icons-material/LocalShipping';
 import HourglassBottomIcon from '@mui/icons-material/HourglassBottom';
 import CheckCircleIcon from '@mui/icons-material/CheckCircle';
 import Paper from '@mui/material/Paper';
-import Divider from '@mui/material/Divider';
 import InfoOutlinedIcon from '@mui/icons-material/InfoOutlined';
 import PersonIcon from '@mui/icons-material/Person';
 import ListAltIcon from '@mui/icons-material/ListAlt';

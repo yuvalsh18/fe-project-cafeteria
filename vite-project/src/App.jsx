@@ -2,7 +2,6 @@ import { useState, useEffect } from 'react';
 import reactLogo from './assets/react.svg';
 import './App.css';
 import '@mui/material';
-import { Typography } from '@mui/material';
 import Header from './Header';
 import { Route, Routes, useParams } from 'react-router-dom';
 import { collection, onSnapshot, addDoc, serverTimestamp } from "firebase/firestore";
@@ -11,7 +10,6 @@ import Help from './Help';
 import Menu from './Menu';
 import usePageTitle from './hooks/usePageTitle';
 import MenuItemForm from './MenuItemForm';
-import { db } from "./firebase";
 import Students from './Students';
 import OrderForm from './OrderForm';
 import AdminDashboard from './components/AdminDashboard';
@@ -38,7 +36,7 @@ function App() {
       <RequireAuth>
         <Header />
         <Routes>
-          <Route path='/' element={<Home mode={mode} />} />
+          <Route path='/' element={<Home />} />
           <Route path="/help" element={<Help />} />
           <Route path="/menu" element={<Menu />} />
           <Route path="/addMenuItem" element={<MenuItemForm />} />
@@ -47,7 +45,6 @@ function App() {
           <Route path="/newOrder" element={<OrderForm studentId={"demo-student-id"} />} />
           <Route path="/editOrder/:studentDocId/:orderId" element={<EditOrderWrapper />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/admin" element={<AdminHome />} />
         </Routes>
       </RequireAuth>    
     </>

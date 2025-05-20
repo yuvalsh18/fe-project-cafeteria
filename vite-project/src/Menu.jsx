@@ -1,17 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import Table from '@mui/material/Table';
-import TableBody from '@mui/material/TableBody';
-import TableCell from '@mui/material/TableCell';
-import TableContainer from '@mui/material/TableContainer';
-import TableHead from '@mui/material/TableHead';
-import TableRow from '@mui/material/TableRow';
-import Paper from '@mui/material/Paper';
 import { Typography, Button, Box } from '@mui/material';
 import { collection, onSnapshot, doc, deleteDoc } from "firebase/firestore";
 import { db } from "./firebase";
-import EditIcon from '@mui/icons-material/Edit';
-import DeleteIcon from '@mui/icons-material/Delete';
 import useMode from './hooks/useMode';
 import MenuTable from './components/MenuTable';
 import usePageTitle from './hooks/usePageTitle';
