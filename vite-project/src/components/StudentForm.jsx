@@ -1,16 +1,31 @@
-import React from 'react';
-import { TextField, Button, Stack, Typography } from '@mui/material';
-import SaveIcon from '@mui/icons-material/Save';
-import CancelIcon from '@mui/icons-material/Cancel';
-import PersonAddAltIcon from '@mui/icons-material/PersonAddAlt';
+import React from "react";
+import { TextField, Button, Stack, Typography } from "@mui/material";
+import SaveIcon from "@mui/icons-material/Save";
+import CancelIcon from "@mui/icons-material/Cancel";
+import PersonAddAltIcon from "@mui/icons-material/PersonAddAlt";
 
-export default function StudentForm({ form, editingId, error, onChange, onAdd, onUpdate, onCancel }) {
+export default function StudentForm({
+  form,
+  editingId,
+  error,
+  onChange,
+  onAdd,
+  onUpdate,
+  onCancel,
+}) {
   return (
     <>
       {error && (
-        <Typography color="error" sx={{ mb: 2 }}>{error}</Typography>
+        <Typography color="error" sx={{ mb: 2 }}>
+          {error}
+        </Typography>
       )}
-      <Stack direction={{ xs: 'column', sm: 'row' }} spacing={2} alignItems="center" justifyContent="center">
+      <Stack
+        direction={{ xs: "column", sm: "row" }}
+        spacing={2}
+        alignItems="center"
+        justifyContent="center"
+      >
         <TextField
           name="studentId"
           label="Student ID"

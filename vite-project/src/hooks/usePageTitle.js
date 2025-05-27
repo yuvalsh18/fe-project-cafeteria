@@ -1,7 +1,7 @@
-import { useEffect } from 'react';
-import { useLocation } from 'react-router-dom';
+import { useEffect } from "react";
+import { useLocation } from "react-router-dom";
 
-const usePageTitle = (titleMap, defaultTitle = 'Vite + React') => {
+const usePageTitle = (titleMap, defaultTitle = "Vite + React") => {
   const location = useLocation();
 
   useEffect(() => {

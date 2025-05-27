@@ -1,21 +1,23 @@
-import { useEffect, useState } from 'react';
+import { useEffect, useState } from "react";
 
 // Custom hook to sync mode (student/admin) across tabs and components
-export default function useMode(defaultMode = 'student') {
-  const [mode, setMode] = useState(() => localStorage.getItem('mode') || defaultMode);
+export default function useMode(defaultMode = "student") {
+  const [mode, setMode] = useState(
+    () => localStorage.getItem("mode") || defaultMode
+  );
 
   useEffect(() => {
     const handleStorageChange = () => {
-      setMode(localStorage.getItem('mode') || defaultMode);
+      setMode(localStorage.getItem("mode") || defaultMode);
     };
     const handleModeChanged = () => {
-      setMode(localStorage.getItem('mode') || defaultMode);
+      setMode(localStorage.getItem("mode") || defaultMode);
     };
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('mode-changed', handleModeChanged);
+    window.addEventListener("storage", handleStorageChange);
+    window.addEventListener("mode-changed", handleModeChanged);
     return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('mode-changed', handleModeChanged);
+      window.removeEventListener("storage", handleStorageChange);
+      window.removeEventListener("mode-changed", handleModeChanged);
     };
   }, [defaultMode]);
 
