@@ -52,12 +52,6 @@ function GeminiChatPage() {
     };
   }, [mode]);
 
-  // Log the Gemini API key on component mount
-  useEffect(() => {
-    const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
-    console.log(`[GeminiChatPage] Gemini API Key: ${apiKey}`);
-  }, []);
-
   const handleSend = async () => {
     if (!input.trim()) return;
     const userMsg = { sender: "user", text: input };

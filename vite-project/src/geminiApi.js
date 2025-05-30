@@ -9,24 +9,6 @@ export async function geminiChat(messages) {
   const apiKey = import.meta.env.VITE_GEMINI_API_KEY;
   if (!apiKey) throw new Error("Gemini API key not set in .env");
 
-  // Log Gemini API token status
-  try {
-    const statusRes = await fetch(
-      `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
-    );
-    if (statusRes.ok) {
-      console.log(`[Gemini API] Token status: OK | API Key: ${apiKey}`);
-    } else {
-      console.log(
-        `[Gemini API] Token status: FAILED (${statusRes.status} ${statusRes.statusText}) | API Key: ${apiKey}`
-      );
-    }
-  } catch (err) {
-    console.log(
-      `[Gemini API] Token status: ERROR (${err.message}) | API Key: ${apiKey}`
-    );
-  }
-
   // Gemini expects [{role: 'user'|'model', parts: [{text: string}]}]
   const formatted = messages.map((msg) => ({
     role: msg.sender === "ai" ? "model" : "user",
