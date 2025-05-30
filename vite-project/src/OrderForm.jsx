@@ -137,6 +137,8 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
     if (mode === "new" && !studentIdInput) return false;
     if (pickupOrDelivery === "delivery" && !deliveryRoom) return false;
     if (pickupOrDelivery === "pickup" && deliveryRoom) return false;
+    // New: requiredTime must be in the future
+    if (requiredTime && new Date(requiredTime) <= new Date()) return false;
     return true;
   };
 
@@ -162,6 +164,8 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
         setError("Please enter delivery room.");
       else if (pickupOrDelivery === "pickup" && deliveryRoom)
         setError("Room must be empty for pickup.");
+      else if (requiredTime && new Date(requiredTime) <= new Date())
+        setError("Delivery/Pickup time must be in the future.");
       else setError("Please fill all required fields.");
       return;
     }
@@ -356,6 +360,18 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
     setSubmitting(false);
   };
 
+  // Helper to format date as dd/MM/yyyy and time as HH:mm
+  function formatDateTime(date) {
+    if (!date) return "-";
+    const d = new Date(date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
+
   // Only read-only if not admin and editing a non-new order
   const isReadOnly =
     userMode !== "admin" && mode === "edit" && orderStatus !== "new";
@@ -465,6 +481,7 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
             }
             value={requiredTime}
             onChange={setRequiredTime}
+            minDateTime={new Date()}
             textField={(params) => (
               <TextField
                 {...params}
@@ -476,6 +493,28 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
             )}
             sx={{ mb: 2, width: "100%" }}
             disabled={isReadOnly}
+            shouldDisableDate={(date) => date < new Date().setHours(0, 0, 0, 0)}
+            shouldDisableTime={(timeValue, clockType) => {
+              if (!requiredTime) return false;
+              const now = new Date();
+              const selected = new Date(requiredTime);
+              if (clockType === "hours" || clockType === "minutes") {
+                // Only disable past times for today
+                if (selected.toDateString() === now.toDateString()) {
+                  if (clockType === "hours" && timeValue < now.getHours())
+                    return true;
+                  if (
+                    clockType === "minutes" &&
+                    selected.getHours() === now.getHours() &&
+                    timeValue < now.getMinutes()
+                  )
+                    return true;
+                }
+              }
+              return false;
+            }}
+            ampm={false}
+            format="dd/MM/yyyy HH:mm"
           />
         </LocalizationProvider>
         <FormControl fullWidth sx={{ mb: 2 }} disabled={isReadOnly}>
@@ -568,6 +607,17 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
             Final Price: ₪{finalPrice}
           </Typography>
         </Box>
+        {/* Show requiredTime in dd/MM/yyyy HH:mm format if needed elsewhere */}
+        {mode === "edit" && requiredTime && (
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Current Required Time: {formatDateTime(requiredTime)}
+          </Typography>
+        )}
+        {mode === "edit" && orderId && (
+          <Typography variant="body2" sx={{ mb: 2 }}>
+            Order Created At: {formatDateTime(orderId && ordertimestamp)}
+          </Typography>
+        )}
         {error && (
           <Typography color="error" sx={{ mb: 2 }}>
             {error}

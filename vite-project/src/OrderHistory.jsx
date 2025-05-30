@@ -120,6 +120,18 @@ export default function OrderHistory() {
     }
   });
 
+  // Helper to format date as dd/MM/yyyy and time as HH:mm
+  function formatDateTime(date) {
+    if (!date) return "-";
+    const d = new Date(date.seconds ? date.seconds * 1000 : date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
+
   return (
     <Box sx={{ mt: 10, maxWidth: 1200, mx: "auto" }}>
       <Typography
@@ -236,7 +248,7 @@ export default function OrderHistory() {
                   sortedOrders.map((order) => (
                     <OrderRow
                       key={order.id}
-                      order={order}
+                      order={{ ...order, ordertimestamp: order.ordertimestamp }}
                       mode={mode}
                       onClick={() => handleRowClick(order)}
                     />

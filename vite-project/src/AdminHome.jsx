@@ -33,6 +33,7 @@ import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import EditNoteIcon from "@mui/icons-material/EditNote";
 import OrderDetailsModal from "./components/OrderDetailsModal";
+import { useOrderStatusUpdater } from "./hooks/useOrderStatusUpdater";
 
 const ORDER_STATUSES = [
   "new",
@@ -79,50 +80,55 @@ export default function AdminHome() {
   const [detailsOrder, setDetailsOrder] = useState(null);
   const navigate = useNavigate();
 
-  useEffect(() => {
-    async function fetchOrders() {
-      setLoading(true);
-      const studentsSnap = await getDocs(collection(db, "students"));
-      const orders = [];
-      for (const studentDoc of studentsSnap.docs) {
-        const studentId = studentDoc.id;
-        const studentData = studentDoc.data();
-        const ordersSnap = await getDocs(
-          collection(db, `students/${studentId}/orders`)
-        );
-        ordersSnap.forEach((orderDoc) => {
-          orders.push({
-            ...orderDoc.data(),
-            id: orderDoc.id,
-            studentDocId: studentId,
-            student: studentData,
-          });
+  // Refetch orders logic for useOrderStatusUpdater
+  const fetchOrders = async () => {
+    setLoading(true);
+    const studentsSnap = await getDocs(collection(db, "students"));
+    const orders = [];
+    for (const studentDoc of studentsSnap.docs) {
+      const studentId = studentDoc.id;
+      const studentData = studentDoc.data();
+      const ordersSnap = await getDocs(
+        collection(db, `students/${studentId}/orders`)
+      );
+      ordersSnap.forEach((orderDoc) => {
+        orders.push({
+          ...orderDoc.data(),
+          id: orderDoc.id,
+          studentDocId: studentId,
+          student: studentData,
         });
-      }
-      // Group by status
-      const grouped = {};
-      for (const status of ORDER_STATUSES) grouped[status] = [];
-      for (const order of orders) {
-        const s = order.status || "new";
-        if (!grouped[s]) grouped[s] = [];
-        grouped[s].push(order);
-      }
-      setOrdersByStatus(grouped);
-      setLoading(false);
+      });
     }
+    // Group by status
+    const grouped = {};
+    for (const status of ORDER_STATUSES) grouped[status] = [];
+    for (const order of orders) {
+      const s = order.status || "new";
+      if (!grouped[s]) grouped[s] = [];
+      grouped[s].push(order);
+    }
+    setOrdersByStatus(grouped);
+    setLoading(false);
+  };
+
+  useEffect(() => {
     fetchOrders();
   }, []);
+
+  // Integrate useOrderStatusUpdater
+  const handleStatusChange = useOrderStatusUpdater(fetchOrders);
 
   const handleCardClick = (order) => {
     setDetailsOrder(order);
     setDetailsModalOpen(true);
   };
-
   const handleDetailsModalClose = () => {
     setDetailsModalOpen(false);
     setDetailsOrder(null);
   };
 
+  // Update to use handleStatusChange for status updates
   const handleOrderStatusChange = async (order, newStatus) => {
     if (!order) return;
     const orderRef = doc(
@@ -131,7 +137,7 @@ export default function AdminHome() {
     );
     await updateDoc(orderRef, { status: newStatus });
     setDetailsOrder({ ...order, status: newStatus });
-    // Optionally refresh orders list here
+    await handleStatusChange(order, newStatus); // Refresh order lists after status change
   };
 
   const handleEditOrder = () => {
@@ -148,6 +154,7 @@ export default function AdminHome() {
         gutterBottom
         fontWeight={700}
         letterSpacing={2}
+        sx={{ mt: 10 }}
       >
         Admin Orders
       </Typography>

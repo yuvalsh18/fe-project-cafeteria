@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useCallback } from "react";
 import Dialog from "@mui/material/Dialog";
 import DialogTitle from "@mui/material/DialogTitle";
 import DialogContent from "@mui/material/DialogContent";
@@ -19,6 +19,7 @@ import DeliveryDiningIcon from "@mui/icons-material/DeliveryDining";
 import RoomIcon from "@mui/icons-material/Room";
 import NotesIcon from "@mui/icons-material/Notes";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
+import { isBefore, startOfDay } from "date-fns";
 
 const ORDER_STATUSES = [
   "new",
@@ -41,11 +42,41 @@ export default function OrderDetailsModal({
     setStatus(order?.status || "new");
   }, [order]);
 
-  const handleStatusUpdate = () => {
+  // Fix: keep status in sync with prop changes
+  React.useEffect(() => {
+    if (order && order.status !== status) {
+      setStatus(order.status);
+    }
+  }, [order?.status]);
+
+  const handleStatusUpdate = async () => {
     if (onStatusChange && order) {
-      onStatusChange(order, status);
+      await onStatusChange(order, status);
+      onClose(); // Close the modal after status update
     }
   };
+
+  // Filter statuses based on order type
+  let allowedStatuses = ORDER_STATUSES;
+  if (order && order.pickupOrDelivery === "pickup") {
+    // For pickup orders, do not allow any 'delivery' status
+    allowedStatuses = ORDER_STATUSES.filter((s) => s !== "in delivery");
+  } else if (order && order.pickupOrDelivery === "delivery") {
+    // For delivery orders, do not allow any 'pickup' status
+    allowedStatuses = ORDER_STATUSES.filter((s) => s !== "waiting for pickup");
+  }
+
+  // Helper to format date as dd/MM/yyyy and time as HH:mm
+  function formatDateTime(date) {
+    if (!date) return "-";
+    const d = new Date(date.seconds ? date.seconds * 1000 : date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
 
   if (!order) return null;
   const orderDate = order.ordertimestamp
@@ -83,7 +114,18 @@ export default function OrderDetailsModal({
               sx={{ mr: 1, verticalAlign: "middle" }}
               fontSize="small"
             />
-            <b>Order Date:</b> {orderDate}
+            <b>Order Created At:</b> {formatDateTime(order.ordertimestamp)}
+          </Typography>
+          <Typography>
+            <AccessTimeIcon
+              sx={{ mr: 1, verticalAlign: "middle" }}
+              fontSize="small"
+            />
+            <b>
+              {order.pickupOrDelivery === "delivery" ? "Delivery" : "Pickup"}{" "}
+              Time:
+            </b>{" "}
+            {formatDateTime(order.requiredTime)}
           </Typography>
           <Typography>
             <DeliveryDiningIcon
@@ -131,8 +173,17 @@ export default function OrderDetailsModal({
                   label="Status"
                   onChange={(e) => setStatus(e.target.value)}
                 >
-                  {ORDER_STATUSES.map((s) => (
-                    <MenuItem key={s} value={s}>
+                  {allowedStatuses.map((s) => (
+                    <MenuItem
+                      key={s}
+                      value={s}
+                      // Only disable for non-admins if requiredTime is in the past
+                      disabled={
+                        mode !== "admin" &&
+                        order.requiredTime &&
+                        isBefore(new Date(order.requiredTime), new Date())
+                      }
+                    >
                       {s.charAt(0).toUpperCase() + s.slice(1)}
                     </MenuItem>
                   ))}
@@ -161,5 +212,17 @@ export default function OrderDetailsModal({
         )}
       </DialogActions>
     </Dialog>
+  );
+}
+
+// Custom hook to refresh orders after status change
+export function useOrderStatusUpdater(fetchOrders) {
+  // fetchOrders: a function that reloads the orders from Firestore
+  return useCallback(
+    async (order, newStatus) => {
+      // You can add any additional logic here if needed
+      await fetchOrders();
+    },
+    [fetchOrders]
   );
 }

@@ -19,6 +19,7 @@ import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import StudentSelector from "./components/StudentSelector";
 import OrderDetailsModal from "./components/OrderDetailsModal";
+import { useOrderStatusUpdater } from "./hooks/useOrderStatusUpdater";
 
 const ORDER_STATUSES = [
   "new",
@@ -104,6 +105,33 @@ export default function StudentHome() {
     fetchOrders();
   }, [selectedStudentId]);
 
+  // Hook to refresh orders after status change
+  const handleStatusChange = useOrderStatusUpdater(() => {
+    // re-fetch orders for the selected student
+    if (!selectedStudentId) return;
+    async function fetchOrders() {
+      setLoading(true);
+      const ordersSnap = await getDocs(
+        collection(db, `students/${selectedStudentId}/orders`)
+      );
+      const orders = ordersSnap.docs.map((doc) => ({
+        ...doc.data(),
+        id: doc.id,
+      }));
+      // Group by status
+      const grouped = {};
+      for (const status of ORDER_STATUSES) grouped[status] = [];
+      for (const order of orders) {
+        const s = order.status || "new";
+        if (!grouped[s]) grouped[s] = [];
+        grouped[s].push(order);
+      }
+      setOrdersByStatus(grouped);
+      setLoading(false);
+    }
+    fetchOrders();
+  });
+
   const handleOrderCardClick = (order) => {
     setDetailsOrder(order);
     setDetailsModalOpen(true);
@@ -112,6 +140,18 @@ export default function StudentHome() {
     setDetailsModalOpen(false);
     setDetailsOrder(null);
   };
+
+  // Helper to format date as dd/MM/yyyy and time as HH:mm
+  function formatDateTime(date) {
+    if (!date) return "-";
+    const d = new Date(date.seconds ? date.seconds * 1000 : date);
+    const day = String(d.getDate()).padStart(2, "0");
+    const month = String(d.getMonth() + 1).padStart(2, "0");
+    const year = d.getFullYear();
+    const hours = String(d.getHours()).padStart(2, "0");
+    const minutes = String(d.getMinutes()).padStart(2, "0");
+    return `${day}/${month}/${year} ${hours}:${minutes}`;
+  }
 
   return (
     <Box sx={{ mt: 10 }}>
@@ -277,6 +317,10 @@ export default function StudentHome() {
                             >
                               <b>Price:</b> ₪{order.finalPrice}
                             </Typography>
+                            <Typography variant="body2" color="text.secondary">
+                              <b>Order Date:</b>{" "}
+                              {formatDateTime(order.ordertimestamp)}
+                            </Typography>
                             {status === "done" && (
                               <Typography
                                 variant="body2"
@@ -327,6 +371,7 @@ export default function StudentHome() {
         onClose={handleDetailsModalClose}
         mode={"student"}
         editable={false}
+        onStatusChange={handleStatusChange}
       />
     </Box>
   );
