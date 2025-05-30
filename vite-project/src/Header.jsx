@@ -25,8 +25,15 @@ function Header() {
   const mode = useMode();
   const pages =
     mode === "admin"
-      ? ["Menu", "Help", "Students", "Dashboard", "Orders History"]
-      : ["Menu", "Help", "Orders History"];
+      ? [
+          "Menu",
+          "Help",
+          "Students",
+          "Dashboard",
+          "Orders History",
+          "AI Assistant",
+        ]
+      : ["Menu", "Help", "Orders History", "AI Assistant"];
 
   const handleOpenNavMenu = (event) => {
     setAnchorElNav(event.currentTarget);
@@ -112,6 +119,8 @@ function Header() {
                           ? "admin/dashboard"
                           : page === "Orders History"
                           ? "orderHistory"
+                          : page === "AI Assistant"
+                          ? "ai-assistant"
                           : page.toLowerCase())
                     );
                   }}
@@ -154,6 +163,8 @@ function Header() {
                         ? "admin/dashboard"
                         : page === "Orders History"
                         ? "orderHistory"
+                        : page === "AI Assistant"
+                        ? "ai-assistant"
                         : page.toLowerCase())
                   );
                 }}

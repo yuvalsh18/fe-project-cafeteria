@@ -22,6 +22,7 @@ import useMode from "./hooks/useMode";
 import AdminHome from "./AdminHome";
 import RequireAuth from "./RequireAuth";
 import OrderHistory from "./OrderHistory";
+import GeminiChatPage from "./GeminiChatPage";
 
 const titleMap = {
   "/": "Home - Ono cafeteria",
@@ -31,6 +32,7 @@ const titleMap = {
   "/editMenuItem/:itemId": "Edit Menu Item - Ono cafeteria",
   "/students": "Students - Ono cafeteria",
   "/newOrder": "New Order - Ono cafeteria",
+  "/ai-assistant": "AI Assistant - Ono cafeteria",
 };
 
 function App() {
@@ -68,6 +70,7 @@ function App() {
           />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
           <Route path="/orderHistory" element={<OrderHistory />} />
+          <Route path="/ai-assistant" element={<GeminiChatPage />} />
         </Routes>
       </RequireAuth>
     </>
