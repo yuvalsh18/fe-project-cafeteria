@@ -15,14 +15,16 @@ export async function geminiChat(messages) {
       `https://generativelanguage.googleapis.com/v1beta/models?key=${apiKey}`
     );
     if (statusRes.ok) {
-      console.log("[Gemini API] Token status: OK");
+      console.log(`[Gemini API] Token status: OK | API Key: ${apiKey}`);
     } else {
       console.log(
-        `[Gemini API] Token status: FAILED (${statusRes.status} ${statusRes.statusText})`
+        `[Gemini API] Token status: FAILED (${statusRes.status} ${statusRes.statusText}) | API Key: ${apiKey}`
       );
     }
   } catch (err) {
-    console.log(`[Gemini API] Token status: ERROR (${err.message})`);
+    console.log(
+      `[Gemini API] Token status: ERROR (${err.message}) | API Key: ${apiKey}`
+    );
   }
 
   // Gemini expects [{role: 'user'|'model', parts: [{text: string}]}]
