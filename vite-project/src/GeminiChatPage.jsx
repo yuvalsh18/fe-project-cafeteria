@@ -8,7 +8,7 @@ import ChatMessageList from "./components/ChatMessageList";
 import ChatInput from "./components/ChatInput";
 import ChatHeader from "./components/ChatHeader";
 import SmartToyIcon from "@mui/icons-material/SmartToy";
-import React, { useEffect } from "react";
+import React from "react";
 
 function GeminiChatPage() {
   const mode = useMode();
