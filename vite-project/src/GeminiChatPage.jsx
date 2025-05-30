@@ -1,22 +1,13 @@
 import { useState, useRef, useEffect } from "react";
-import {
-  Box,
-  Typography,
-  Paper,
-  TextField,
-  IconButton,
-  List,
-  ListItem,
-  ListItemText,
-  Avatar,
-  Divider,
-} from "@mui/material";
-import SendIcon from "@mui/icons-material/Send";
-import SmartToyIcon from "@mui/icons-material/SmartToy";
+import { Box, Typography, Paper, Divider } from "@mui/material";
 import { geminiChat } from "./geminiApi";
 import GEMINI_SITE_CONTEXT from "./geminiSiteContext";
 import ReactMarkdown from "react-markdown";
 import useMode from "./hooks/useMode";
+import ChatMessageList from "./components/ChatMessageList";
+import ChatInput from "./components/ChatInput";
+import ChatHeader from "./components/ChatHeader";
+import SmartToyIcon from "@mui/icons-material/SmartToy";
 
 function GeminiChatPage() {
   const mode = useMode();
@@ -223,57 +214,23 @@ function GeminiChatPage() {
         overflow: "hidden",
       }}
     >
-      <Box
-        display="flex"
-        alignItems="center"
-        justifyContent="space-between"
-        mb={1}
-      >
-        <Box display="flex" alignItems="center" gap={1}>
-          <Box
-            sx={{
-              width: 10,
-              height: 10,
-              bgcolor: isConnected ? "#00e676" : "#f44336",
-              borderRadius: "50%",
-            }}
-          />
-          <Typography
-            variant="caption"
-            color={isConnected ? "success.main" : "error.main"}
-          >
-            {isConnected
-              ? "Connected to Google Gemini"
-              : "Not connected to Google Gemini"}
-          </Typography>
-        </Box>
-        <Box>
-          <IconButton
-            color="primary"
-            aria-label="Start new chat"
-            onClick={() => {
-              setMessages([
-                {
-                  sender: "ai",
-                  text: "Hi! I'm your helpful AI assistant. How can I help you with the Ono cafeteria app?",
-                },
-              ]);
-              setInput("");
-              setTimeout(() => {
-                if (listRef.current) {
-                  listRef.current.scrollTop = listRef.current.scrollHeight;
-                }
-              }, 100);
-            }}
-            sx={{ ml: 2 }}
-          >
-            <SmartToyIcon />
-            <Typography variant="button" sx={{ ml: 1 }}>
-              New Chat
-            </Typography>
-          </IconButton>
-        </Box>
-      </Box>
+      <ChatHeader
+        isConnected={isConnected}
+        onNewChat={() => {
+          setMessages([
+            {
+              sender: "ai",
+              text: "Hi! I'm your helpful AI assistant. How can I help you with the Ono cafeteria app?",
+            },
+          ]);
+          setInput("");
+          setTimeout(() => {
+            if (listRef.current) {
+              listRef.current.scrollTop = listRef.current.scrollHeight;
+            }
+          }, 100);
+        }}
+      />
       <Paper
         elevation={3}
         sx={{
@@ -300,75 +257,14 @@ function GeminiChatPage() {
             mb: 2,
           }}
         >
-          <List>
-            {messages.map((msg, idx) => (
-              <ListItem
-                key={idx}
-                alignItems={msg.sender === "ai" ? "flex-start" : "center"}
-              >
-                <Avatar
-                  sx={{
-                    bgcolor: msg.sender === "ai" ? "primary.main" : "grey.400",
-                    mr: 2,
-                  }}
-                >
-                  {msg.sender === "ai" ? <SmartToyIcon /> : "U"}
-                </Avatar>
-                <ListItemText
-                  primary={
-                    <Box
-                      sx={{
-                        whiteSpace: "pre-line",
-                        wordBreak: "break-word",
-                      }}
-                    >
-                      <ReactMarkdown
-                        components={{
-                          p: ({ node, ...props }) => <span {...props} />,
-                        }}
-                      >
-                        {msg.text}
-                      </ReactMarkdown>
-                    </Box>
-                  }
-                  primaryTypographyProps={{
-                    sx: {
-                      bgcolor: msg.sender === "ai" ? "#e3f2fd" : "#f5f5f5",
-                      p: 1.5,
-                      borderRadius: 2,
-                      maxWidth: 400,
-                      display: "inline-block",
-                      fontSize: 16,
-                      lineHeight: 1.7,
-                      fontFamily: "inherit",
-                    },
-                  }}
-                />
-              </ListItem>
-            ))}
-          </List>
+          <ChatMessageList messages={messages} />
         </Box>
-        <Box display="flex" alignItems="center" gap={1}>
-          <TextField
-            fullWidth
-            multiline
-            minRows={1}
-            maxRows={4}
-            placeholder="Type your question..."
-            value={input}
-            onChange={(e) => setInput(e.target.value)}
-            onKeyDown={handleInputKeyDown}
-            variant="outlined"
-            size="small"
-          />
-          <IconButton
-            color="primary"
-            onClick={handleSend}
-            disabled={!input.trim()}
-          >
-            <SendIcon />
-          </IconButton>
-        </Box>
+        <ChatInput
+          input={input}
+          setInput={setInput}
+          handleSend={handleSend}
+          handleInputKeyDown={handleInputKeyDown}
+        />
       </Paper>
     </Box>
   );
