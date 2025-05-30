@@ -223,6 +223,19 @@ export default function OrderDetailsModal({
         <Button onClick={onClose} color="primary" variant="contained">
           Close
         </Button>
+        {mode === "admin" && (
+          <Button
+            color="secondary"
+            variant="contained"
+            onClick={() => {
+              if (order && order.studentDocId && order.id) {
+                window.location.href = `/editOrder/${order.studentDocId}/${order.id}`;
+              }
+            }}
+          >
+            Edit
+          </Button>
+        )}
         {editable && (
           <Button
             onClick={handleStatusUpdate}

@@ -20,18 +20,27 @@ export default function StudentSelector({
         ...sx,
       }}
     >
-      <InputLabel id="student-filter-label" sx={{ fontSize: 20 }}>
-        Select Student
+      <InputLabel
+        id="student-filter-label"
+        sx={{
+          fontSize: 20,
+          left: 10,
+          top: 8,
+          position: "absolute",
+          width: "auto",
+        }}
+        shrink
+      >
+        Student
       </InputLabel>
       <Select
         labelId="student-filter-label"
         id="student-filter-select"
         value={selectedStudentId || ""}
-        label="Select Student"
+        label="Student"
         onChange={(e) => setSelectedStudentId(e.target.value)}
         sx={{ fontSize: 20, minHeight: 56 }}
         MenuProps={{ PaperProps: { sx: { fontSize: 20 } } }}
-        InputLabelProps={{ shrink: true }}
       >
         <MenuItem value="" disabled sx={{ fontSize: 20, py: 2 }}>
           Please select a student

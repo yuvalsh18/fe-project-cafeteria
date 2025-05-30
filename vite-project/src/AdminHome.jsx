@@ -1,7 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
-import { Box, Typography, Paper, Grid } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import usePageTitle from "./hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import OrderDetailsModal from "./components/OrderDetailsModal";
@@ -12,6 +12,7 @@ import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import OrdersTablePaper from "./components/OrdersTablePaper";
 
 const ORDER_STATUSES = [
   "new",
@@ -148,86 +149,34 @@ export default function AdminHome() {
       >
         Admin Orders
       </Typography>
-      <Paper
-        elevation={4}
-        sx={{
-          maxWidth: 1600,
-          minWidth: 1200,
-          mx: "auto",
-          p: { xs: 2, sm: 4 },
-          borderRadius: 5,
-          mt: 3,
-          bgcolor: "#f8fafc",
-        }}
-      >
-        {loading ? (
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            minHeight="40vh"
-          >
-            <Typography variant="h6">Loading orders...</Typography>
-          </Box>
-        ) : (
-          <Box>
-            {ORDER_STATUSES.map((status) => (
-              <Paper
-                key={status}
-                elevation={2}
-                sx={{
-                  mb: 6,
-                  p: 3,
-                  borderRadius: 4,
-                  bgcolor: STATUS_BG[status],
-                  borderLeft: `8px solid ${STATUS_COLORS[status]}`,
-                }}
-              >
-                <Box display="flex" alignItems="center" mb={2}>
-                  {React.cloneElement(STATUS_ICONS[status], {
-                    style: { color: STATUS_COLORS[status], marginRight: 12 },
-                  })}
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: 700,
-                      color: STATUS_COLORS[status],
-                      letterSpacing: 1,
-                    }}
-                  >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </Typography>
-                </Box>
-                <Grid container spacing={3}>
-                  {ordersByStatus[status] &&
-                  ordersByStatus[status].length > 0 ? (
-                    ordersByStatus[status].map((order) => (
-                      <Grid item xs={12} sm={6} md={4} key={order.id}>
-                        <OrderCard
-                          order={order}
-                          status={status}
-                          onClick={() => handleCardClick(order)}
-                          mode="admin"
-                        />
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
-                      <Typography
-                        variant="body2"
-                        color="text.disabled"
-                        align="center"
-                      >
-                        No orders
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              </Paper>
-            ))}
-          </Box>
+      <Box display="flex" justifyContent="center" mb={2}>
+        <Button
+          variant="contained"
+          color="primary"
+          size="large"
+          sx={{ fontSize: 20, px: 5, py: 1.5, borderRadius: 2, boxShadow: 2 }}
+          onClick={() => navigate("/newOrder")}
+        >
+          New Order
+        </Button>
+      </Box>
+      <OrdersTablePaper
+        loading={loading}
+        ordersByStatus={ordersByStatus}
+        ORDER_STATUSES={ORDER_STATUSES}
+        STATUS_ICONS={STATUS_ICONS}
+        STATUS_COLORS={STATUS_COLORS}
+        STATUS_BG={STATUS_BG}
+        mode="admin"
+        renderOrderCard={(order, status) => (
+          <OrderCard
+            order={order}
+            status={status}
+            onClick={() => handleCardClick(order)}
+            mode="admin"
+          />
         )}
-      </Paper>
+      />
       <OrderDetailsModal
         open={detailsModalOpen}
         order={detailsOrder}

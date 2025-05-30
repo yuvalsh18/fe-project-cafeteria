@@ -45,7 +45,12 @@ import OrderConfirmationDialog from "./components/OrderConfirmationDialog";
 import usePageTitle from "./hooks/usePageTitle";
 import useMode from "./hooks/useMode";
 
-export default function OrderForm({ mode = "new", studentDocId, orderId }) {
+export default function OrderForm({
+  mode = "new",
+  studentDocId,
+  orderId,
+  fixedStudentId,
+}) {
   usePageTitle(
     mode === "edit"
       ? { "/editOrder/:studentDocId/:orderId": "Edit Order - Ono cafeteria" }
@@ -93,9 +98,13 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
     async function fetchStudents() {
       const snapshot = await getDocs(collection(db, "students"));
       setStudents(snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() })));
+      // If fixedStudentId is provided, set it as the input
+      if (fixedStudentId) {
+        setStudentIdInput(fixedStudentId);
+      }
     }
     fetchStudents();
-  }, []);
+  }, [fixedStudentId]);
 
   // For edit mode: fetch order and prefill fields
   useEffect(() => {
@@ -425,7 +434,7 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
           }
           value={students.find((s) => s.studentId === studentIdInput) || null}
           onChange={(_, newValue) =>
-            mode === "edit"
+            mode === "edit" || fixedStudentId
               ? null
               : setStudentIdInput(newValue ? newValue.studentId : "")
           }
@@ -436,13 +445,15 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
               fullWidth
               required
               sx={{ mb: 2 }}
-              disabled={mode === "edit" || isReadOnly}
+              disabled={
+                mode === "edit" || isReadOnly || Boolean(fixedStudentId)
+              }
             />
           )}
           isOptionEqualToValue={(option, value) =>
             option.studentId === value.studentId
           }
-          disabled={mode === "edit" || isReadOnly}
+          disabled={mode === "edit" || isReadOnly || Boolean(fixedStudentId)}
         />
         <FormControl fullWidth sx={{ mb: 2 }} disabled={isReadOnly}>
           <InputLabel id="menu-items-label">
@@ -637,7 +648,20 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
         )}
         {mode === "edit" && orderId && (
           <Typography variant="body2" sx={{ mb: 2 }}>
-            Order Created At: {formatDateTime(orderId && ordertimestamp)}
+            Order Created At:{" "}
+            {formatDateTime(
+              (orderId &&
+                students &&
+                students.length &&
+                students.find(
+                  (s) =>
+                    s.id === studentDocId &&
+                    s.orders &&
+                    s.orders[orderId] &&
+                    s.orders[orderId].ordertimestamp
+                )) ||
+                ""
+            )}
           </Typography>
         )}
         {error && (

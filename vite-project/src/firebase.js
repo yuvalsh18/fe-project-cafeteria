@@ -16,4 +16,3 @@ export const db = getFirestore(app);
 export const auth = getAuth(app);
 
 setLogLevel("error");
-console.log("auth", auth); // Check if auth is initialized correctly

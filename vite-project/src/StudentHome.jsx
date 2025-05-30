@@ -1,18 +1,19 @@
 import React, { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
-import { Box, Typography, Paper, Grid, Button } from "@mui/material";
+import { Box, Typography, Button } from "@mui/material";
 import usePageTitle from "./hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
+import StudentSelector from "./components/StudentSelector";
+import OrderDetailsModal from "./components/OrderDetailsModal";
+import { useOrderStatusUpdater } from "./hooks/useOrderStatusUpdater";
+import OrderCard from "./components/OrderCard";
+import OrdersTablePaper from "./components/OrdersTablePaper";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import StudentSelector from "./components/StudentSelector";
-import OrderDetailsModal from "./components/OrderDetailsModal";
-import { useOrderStatusUpdater } from "./hooks/useOrderStatusUpdater";
-import OrderCard from "./components/OrderCard";
 
 const ORDER_STATUSES = [
   "new",
@@ -159,11 +160,12 @@ export default function StudentHome() {
       </Typography>
       <Box
         sx={{
-          width: "100%",
-          maxWidth: 700,
+          width: "60%",
+          display: "flex",
+          justifyContent: "center",
+          alignItems: "center",
           mx: "auto",
           mb: 3,
-          display: { xs: "none", md: "block" },
         }}
       >
         <StudentSelector
@@ -178,95 +180,48 @@ export default function StudentHome() {
           color="primary"
           size="large"
           sx={{ fontSize: 20, px: 5, py: 1.5, borderRadius: 2, boxShadow: 2 }}
-          onClick={() => navigate("/newOrder")}
+          onClick={() => {
+            const selectedStudent = students.find(
+              (s) => s.id === selectedStudentId
+            );
+            if (selectedStudent) {
+              navigate(`/newOrder?studentId=${selectedStudent.studentId}`);
+            } else {
+              navigate("/newOrder");
+            }
+          }}
         >
-          NEW ORDER
+          New Order
         </Button>
       </Box>
-      <Paper
-        elevation={4}
-        sx={{
-          maxWidth: 1100,
-          minWidth: 700,
-          mx: "auto",
-          p: 4,
-          borderRadius: 5,
-          mt: 3,
-          bgcolor: "#fff",
-          boxShadow: 6,
-        }}
-      >
-        {loading ? (
-          <Box
-            display="flex"
-            justifyContent="center"
-            alignItems="center"
-            minHeight="40vh"
-          >
-            <Typography variant="h6">Loading orders...</Typography>
-          </Box>
-        ) : (
-          <Box>
-            {ORDER_STATUSES.map((status) => (
-              <Paper
-                key={status}
-                elevation={2}
-                sx={{
-                  mb: 6,
-                  p: 3,
-                  borderRadius: 4,
-                  bgcolor: STATUS_BG[status],
-                  borderLeft: `8px solid ${STATUS_COLORS[status]}`,
-                  boxShadow: 3,
-                }}
-              >
-                <Box display="flex" alignItems="center" mb={2}>
-                  {React.cloneElement(STATUS_ICONS[status], {
-                    style: { color: STATUS_COLORS[status], marginRight: 12 },
-                  })}
-                  <Typography
-                    variant="h5"
-                    sx={{
-                      fontWeight: 700,
-                      color: STATUS_COLORS[status],
-                      letterSpacing: 1,
-                      fontSize: 28,
-                    }}
-                  >
-                    {status.charAt(0).toUpperCase() + status.slice(1)}
-                  </Typography>
-                </Box>
-                <Grid container spacing={3}>
-                  {ordersByStatus[status] &&
-                  ordersByStatus[status].length > 0 ? (
-                    ordersByStatus[status].map((order) => (
-                      <Grid item xs={12} sm={6} md={4} key={order.id}>
-                        <OrderCard
-                          order={order}
-                          status={status}
-                          onClick={() => handleOrderCardClick(order)}
-                          mode="student"
-                        />
-                      </Grid>
-                    ))
-                  ) : (
-                    <Grid item xs={12}>
-                      <Typography
-                        variant="body2"
-                        color="text.disabled"
-                        align="center"
-                        sx={{ fontSize: 18 }}
-                      >
-                        No orders
-                      </Typography>
-                    </Grid>
-                  )}
-                </Grid>
-              </Paper>
-            ))}
-          </Box>
-        )}
-      </Paper>
+      <Box sx={{ width: "100%", display: "flex", justifyContent: "center" }}>
+        <OrdersTablePaper
+          loading={loading}
+          ordersByStatus={ordersByStatus}
+          ORDER_STATUSES={ORDER_STATUSES}
+          STATUS_ICONS={STATUS_ICONS}
+          STATUS_COLORS={STATUS_COLORS}
+          STATUS_BG={STATUS_BG}
+          mode="student"
+          sx={{
+            width: "100%",
+            maxWidth: 1600,
+            minWidth: 1200,
+            p: { xs: 2, sm: 4 },
+            borderRadius: 5,
+            mt: 3,
+            bgcolor: "#f8fafc",
+          }}
+          renderOrderCard={(order, status) => (
+            <OrderCard
+              order={order}
+              status={status}
+              onClick={() => handleOrderCardClick(order)}
+              mode="student"
+            />
+          )}
+        />
+      </Box>
       <OrderDetailsModal
         open={detailsModalOpen}
         order={detailsOrder}

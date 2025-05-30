@@ -5,11 +5,7 @@ import LoginModal from "./components/LoginModal";
 export default function RequireAuth({ children }) {
   const [user, loading, error] = useAuthState(auth);
 
-  // Debug notes
-  console.log("RequireAuth debug:", { user, loading, error });
-
   if (loading) {
-    console.log("RequireAuth: loading user state...");
     return null; // spinner / skeleton, if you want
   }
   if (error) {
@@ -19,6 +15,5 @@ export default function RequireAuth({ children }) {
     console.log("RequireAuth: user not authenticated, showing LoginModal");
     return <LoginModal />;
   }
-  console.log("RequireAuth: user authenticated", user);
   return children;
 }

@@ -3,7 +3,7 @@ import reactLogo from "./assets/react.svg";
 import "./App.css";
 import "@mui/material";
 import Header from "./Header";
-import { Route, Routes, useParams } from "react-router-dom";
+import { Route, Routes, useParams, useLocation } from "react-router-dom";
 import {
   collection,
   onSnapshot,
@@ -36,6 +36,13 @@ const titleMap = {
 function App() {
   usePageTitle(titleMap, "Ono cafeteria");
   const mode = useMode();
+  const location = useLocation();
+
+  // Helper to get studentId from query string
+  function getStudentIdFromQuery() {
+    const params = new URLSearchParams(location.search);
+    return params.get("studentId") || undefined;
+  }
 
   return (
     <>
@@ -53,7 +60,7 @@ function App() {
           <Route path="/students" element={<Students />} />
           <Route
             path="/newOrder"
-            element={<OrderForm studentId={"demo-student-id"} />}
+            element={<OrderForm fixedStudentId={getStudentIdFromQuery()} />}
           />
           <Route
             path="/editOrder/:studentDocId/:orderId"
