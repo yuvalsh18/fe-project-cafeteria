@@ -36,6 +36,7 @@ jobs:
           VITE_FIREBASE_MESSAGING_SENDER_ID=${{ secrets.VITE_FIREBASE_MESSAGING_SENDER_ID }}
           VITE_FIREBASE_APP_ID=${{ secrets.VITE_FIREBASE_APP_ID }}
           VITE_FIREBASE_MEASUREMENT_ID=${{ secrets.VITE_FIREBASE_MEASUREMENT_ID }}
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
           EOF
 
       # 3 — Set up Node and cache npm dependencies
@@ -48,16 +49,16 @@ jobs:
 
       # 4 — Install dependencies & build
       - name: Install dependencies
-        run: npm ci         # uses the package-lock.json in vite-project/
+        run: npm ci # uses the package-lock.json in vite-project/
       - name: Build
-        run: npm run build  # must exist in vite-project/package.json
+        run: npm run build # must exist in vite-project/package.json
 
       # 5 — Deploy the dist/ folder to Firebase Hosting (live channel)
       - name: Deploy to Firebase Hosting
         uses: FirebaseExtended/action-hosting-deploy@v0
         with:
-          repoToken:              ${{ secrets.GITHUB_TOKEN }}
+          repoToken: ${{ secrets.GITHUB_TOKEN }}
           firebaseServiceAccount: ${{ secrets.FIREBASE_SERVICE_ACCOUNT_ONO_CAFETERIA }}
-          projectId:              ono-cafeteria
-          channelId:              live
-          entryPoint:             ./vite-project   # where firebase.json lives
+          projectId: ono-cafeteria
+          channelId: live
+          entryPoint: ./vite-project # where firebase.json lives
