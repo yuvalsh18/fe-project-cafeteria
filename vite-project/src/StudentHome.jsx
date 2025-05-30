@@ -8,10 +8,6 @@ import {
   CardContent,
   Paper,
   Grid,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
   Button,
 } from "@mui/material";
 import usePageTitle from "./hooks/usePageTitle";
@@ -21,6 +17,8 @@ import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
+import StudentSelector from "./components/StudentSelector";
+import OrderDetailsModal from "./components/OrderDetailsModal";
 
 const ORDER_STATUSES = [
   "new",
@@ -63,6 +61,8 @@ export default function StudentHome() {
   const [selectedStudentId, setSelectedStudentId] = useState("");
   const [ordersByStatus, setOrdersByStatus] = useState({});
   const [loading, setLoading] = useState(true);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [detailsOrder, setDetailsOrder] = useState(null);
 
   // Fetch students for filter
   useEffect(() => {
@@ -104,6 +104,15 @@ export default function StudentHome() {
     fetchOrders();
   }, [selectedStudentId]);
 
+  const handleOrderCardClick = (order) => {
+    setDetailsOrder(order);
+    setDetailsModalOpen(true);
+  };
+  const handleDetailsModalClose = () => {
+    setDetailsModalOpen(false);
+    setDetailsOrder(null);
+  };
+
   return (
     <Box sx={{ mt: 10 }}>
       <Typography
@@ -124,50 +133,11 @@ export default function StudentHome() {
           display: { xs: "none", md: "block" },
         }}
       >
-        <FormControl
-          fullWidth
-          variant="outlined"
-          size="large"
-          sx={{
-            background: "#fff",
-            borderRadius: 2,
-            boxShadow: 2,
-            p: 1,
-            mt: 3,
-          }}
-        >
-          <InputLabel id="student-filter-label" sx={{ fontSize: 20 }}>
-            Select Student
-          </InputLabel>
-          <Select
-            labelId="student-filter-label"
-            id="student-filter-select"
-            value={selectedStudentId || ""}
-            label="Select Student"
-            onChange={(e) => setSelectedStudentId(e.target.value)}
-            sx={{ fontSize: 24, minHeight: 56 }}
-            MenuProps={{ PaperProps: { sx: { fontSize: 20 } } }}
-            InputLabelProps={{ shrink: true }}
-          >
-            <MenuItem value="" disabled sx={{ fontSize: 20, py: 2 }}>
-              Please select a student
-            </MenuItem>
-            {students.map((s) => {
-              const fullName =
-                s.firstName && s.lastName
-                  ? `${s.firstName} ${s.lastName}`
-                  : s.name;
-              const label = fullName
-                ? `${fullName} (${s.studentId || s.id})`
-                : s.studentId || s.id;
-              return (
-                <MenuItem key={s.id} value={s.id} sx={{ fontSize: 20, py: 2 }}>
-                  {label}
-                </MenuItem>
-              );
-            })}
-          </Select>
-        </FormControl>
+        <StudentSelector
+          students={students}
+          selectedStudentId={selectedStudentId}
+          setSelectedStudentId={setSelectedStudentId}
+        />
       </Box>
       <Box sx={{ textAlign: "center", mb: 3 }}>
         <Button
@@ -254,6 +224,7 @@ export default function StudentHome() {
                             position: "relative",
                             zIndex: 1,
                           }}
+                          onClick={() => handleOrderCardClick(order)}
                         >
                           <CardContent sx={{ width: "100%", px: 2 }}>
                             <Typography
@@ -350,6 +321,13 @@ export default function StudentHome() {
           </Box>
         )}
       </Paper>
+      <OrderDetailsModal
+        open={detailsModalOpen}
+        order={detailsOrder}
+        onClose={handleDetailsModalClose}
+        mode={"student"}
+        editable={false}
+      />
     </Box>
   );
 }

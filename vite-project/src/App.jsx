@@ -21,6 +21,7 @@ import AdminDashboard from "./components/AdminDashboard";
 import useMode from "./hooks/useMode";
 import AdminHome from "./AdminHome";
 import RequireAuth from "./RequireAuth";
+import OrderHistory from "./OrderHistory";
 
 const titleMap = {
   "/": "Home - Ono cafeteria",
@@ -59,6 +60,7 @@ function App() {
             element={<EditOrderWrapper />}
           />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/orderHistory" element={<OrderHistory />} />
         </Routes>
       </RequireAuth>
     </>

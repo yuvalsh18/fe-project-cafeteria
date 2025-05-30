@@ -32,6 +32,7 @@ import ListAltIcon from "@mui/icons-material/ListAlt";
 import AccessTimeIcon from "@mui/icons-material/AccessTime";
 import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
 import EditNoteIcon from "@mui/icons-material/EditNote";
+import OrderDetailsModal from "./components/OrderDetailsModal";
 
 const ORDER_STATUSES = [
   "new",
@@ -74,6 +75,8 @@ export default function AdminHome() {
   const [dialogOpen, setDialogOpen] = useState(false);
   const [status, setStatus] = useState("");
   const [loading, setLoading] = useState(true);
+  const [detailsModalOpen, setDetailsModalOpen] = useState(false);
+  const [detailsOrder, setDetailsOrder] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -111,57 +114,24 @@ export default function AdminHome() {
   }, []);
 
   const handleCardClick = (order) => {
-    setSelectedOrder(order);
-    setStatus(order.status || "new");
-    setDialogOpen(true);
+    setDetailsOrder(order);
+    setDetailsModalOpen(true);
   };
 
-  const handleStatusChange = (e) => {
-    setStatus(e.target.value);
+  const handleDetailsModalClose = () => {
+    setDetailsModalOpen(false);
+    setDetailsOrder(null);
   };
 
-  const handleDialogClose = () => {
-    setDialogOpen(false);
-    setSelectedOrder(null);
-  };
-
-  const handleStatusUpdate = async () => {
-    if (!selectedOrder) return;
+  const handleOrderStatusChange = async (order, newStatus) => {
+    if (!order) return;
     const orderRef = doc(
       db,
-      `students/${selectedOrder.studentDocId}/orders/${selectedOrder.id}`
+      `students/${order.studentDocId}/orders/${order.id}`
     );
-    await updateDoc(orderRef, { status });
-    setDialogOpen(false);
-    setSelectedOrder(null);
-    // Refresh orders
-    setLoading(true);
-    const studentsSnap = await getDocs(collection(db, "students"));
-    const orders = [];
-    for (const studentDoc of studentsSnap.docs) {
-      const studentId = studentDoc.id;
-      const studentData = studentDoc.data();
-      const ordersSnap = await getDocs(
-        collection(db, `students/${studentId}/orders`)
-      );
-      ordersSnap.forEach((orderDoc) => {
-        orders.push({
-          ...orderDoc.data(),
-          id: orderDoc.id,
-          studentDocId: studentId,
-          student: studentData,
-        });
-      });
-    }
-    const grouped = {};
-    for (const status of ORDER_STATUSES) grouped[status] = [];
-    for (const order of orders) {
-      const s = order.status || "new";
-      if (!grouped[s]) grouped[s] = [];
-      grouped[s].push(order);
-    }
-    setOrdersByStatus(grouped);
-    setLoading(false);
+    await updateDoc(orderRef, { status: newStatus });
+    setDetailsOrder({ ...order, status: newStatus });
+    // Optionally refresh orders list here
   };
 
   const handleEditOrder = () => {
@@ -348,130 +318,14 @@ export default function AdminHome() {
           </Box>
         )}
       </Paper>
-      <Dialog
-        open={dialogOpen}
-        onClose={handleDialogClose}
-        maxWidth="sm"
-        fullWidth
-        PaperProps={{
-          sx: {
-            borderRadius: 4,
-            p: 2,
-            bgcolor: "#f9fafb",
-            boxShadow: 8,
-          },
-        }}
-      >
-        <DialogTitle
-          sx={{
-            fontWeight: 700,
-            fontSize: 24,
-            pb: 1,
-            display: "flex",
-            alignItems: "center",
-            gap: 1,
-          }}
-        >
-          <InfoOutlinedIcon color="primary" sx={{ fontSize: 28, mr: 1 }} />
-          Order Details
-        </DialogTitle>
-        <DialogContent sx={{ pb: 0 }}>
-          {selectedOrder && (
-            <Box sx={{ mb: 2 }}>
-              <Typography
-                variant="subtitle1"
-                fontWeight={700}
-                gutterBottom
-                sx={{
-                  fontSize: 18,
-                  display: "flex",
-                  alignItems: "center",
-                  gap: 1,
-                }}
-              >
-                <ListAltIcon color="primary" sx={{ fontSize: 20, mr: 1 }} />
-                Order{" "}
-                <span style={{ wordBreak: "break-all" }}>
-                  #{selectedOrder.id}
-                </span>
-              </Typography>
-              <Typography
-                sx={{ mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}
-              >
-                <PersonIcon color="action" sx={{ fontSize: 18, mr: 1 }} />
-                <b>Student:</b>{" "}
-                {selectedOrder.student?.name ||
-                  selectedOrder.student?.studentId ||
-                  selectedOrder.studentDocId}
-              </Typography>
-              <Typography
-                sx={{ mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}
-              >
-                <ListAltIcon color="action" sx={{ fontSize: 18, mr: 1 }} />
-                <b>Items:</b>{" "}
-                {selectedOrder.menuItems?.map((i) => i.name).join(", ")}
-              </Typography>
-              <Typography
-                sx={{ mb: 0.5, display: "flex", alignItems: "center", gap: 1 }}
-              >
-                <AccessTimeIcon color="action" sx={{ fontSize: 18, mr: 1 }} />
-                <b>Time:</b>{" "}
-                {selectedOrder.requiredTime
-                  ? new Date(selectedOrder.requiredTime).toLocaleString()
-                  : ""}
-              </Typography>
-              <Typography
-                sx={{ mb: 1.5, display: "flex", alignItems: "center", gap: 1 }}
-              >
-                <AttachMoneyIcon color="success" sx={{ fontSize: 18, mr: 1 }} />
-                <b>Price:</b> ₪{selectedOrder.finalPrice}
-              </Typography>
-              <FormControl fullWidth variant="outlined" sx={{ mt: 2 }}>
-                <InputLabel id="status-label">Status</InputLabel>
-                <Select
-                  labelId="status-label"
-                  value={status}
-                  label="Status"
-                  onChange={handleStatusChange}
-                >
-                  {ORDER_STATUSES.map((s) => (
-                    <MenuItem key={s} value={s}>
-                      {s.charAt(0).toUpperCase() + s.slice(1)}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            </Box>
-          )}
-        </DialogContent>
-        <MuiDialogActions
-          sx={{ px: 3, pb: 2, pt: 1, justifyContent: "flex-end" }}
-        >
-          <Button
-            onClick={handleDialogClose}
-            color="inherit"
-            sx={{ fontWeight: 500 }}
-          >
-            Close
-          </Button>
-          <Button
-            onClick={handleEditOrder}
-            color="info"
-            startIcon={<EditNoteIcon />}
-            sx={{ fontWeight: 500 }}
-          >
-            Edit Order
-          </Button>
-          <Button
-            onClick={handleStatusUpdate}
-            color="primary"
-            variant="contained"
-            sx={{ fontWeight: 700, boxShadow: 2 }}
-          >
-            Update Status
-          </Button>
-        </MuiDialogActions>
-      </Dialog>
+      <OrderDetailsModal
+        open={detailsModalOpen}
+        order={detailsOrder}
+        onClose={handleDetailsModalClose}
+        mode={"admin"}
+        editable={true}
+        onStatusChange={handleOrderStatusChange}
+      />
     </>
   );
 }
