@@ -19,7 +19,7 @@ export default function OrderRow({ order, mode, onClick }) {
     : "-";
   return (
     <TableRow hover sx={{ cursor: "pointer" }} onClick={onClick}>
-      <TableCell>{order.id}</TableCell>
+      <TableCell>{order.orderID ? order.orderID : order.id}</TableCell>
       {mode === "admin" && <TableCell>{order.studentId}</TableCell>}
       <TableCell>{orderDate}</TableCell>
       {mode === "student" && <TableCell>{order.pickupOrDelivery}</TableCell>}

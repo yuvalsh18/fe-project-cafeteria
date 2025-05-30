@@ -1,15 +1,7 @@
 import React, { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, getDocs } from "firebase/firestore";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  Paper,
-  Grid,
-  Button,
-} from "@mui/material";
+import { Box, Typography, Paper, Grid, Button } from "@mui/material";
 import usePageTitle from "./hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
 import AssignmentIcon from "@mui/icons-material/Assignment";
@@ -20,6 +12,7 @@ import CheckCircleIcon from "@mui/icons-material/CheckCircle";
 import StudentSelector from "./components/StudentSelector";
 import OrderDetailsModal from "./components/OrderDetailsModal";
 import { useOrderStatusUpdater } from "./hooks/useOrderStatusUpdater";
+import OrderCard from "./components/OrderCard";
 
 const ORDER_STATUSES = [
   "new",
@@ -141,8 +134,8 @@ export default function StudentHome() {
     setDetailsOrder(null);
   };
 
-  // Helper to format date as dd/MM/yyyy and time as HH:mm
-  function formatDateTime(date) {
+  // Helper to format date as dd/MM/yyyy and time as HH:mm (24-hour)
+  function formatDateTime24(date) {
     if (!date) return "-";
     const d = new Date(date.seconds ? date.seconds * 1000 : date);
     const day = String(d.getDate()).padStart(2, "0");
@@ -248,103 +241,12 @@ export default function StudentHome() {
                   ordersByStatus[status].length > 0 ? (
                     ordersByStatus[status].map((order) => (
                       <Grid item xs={12} sm={6} md={4} key={order.id}>
-                        <Card
-                          sx={{
-                            bgcolor: "#fff",
-                            boxShadow: 6,
-                            borderRadius: 4,
-                            borderLeft: `6px solid ${STATUS_COLORS[status]}`,
-                            minWidth: 260,
-                            maxWidth: 340,
-                            mx: "auto",
-                            my: 1,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            position: "relative",
-                            zIndex: 1,
-                          }}
+                        <OrderCard
+                          order={order}
+                          status={status}
                           onClick={() => handleOrderCardClick(order)}
-                        >
-                          <CardContent sx={{ width: "100%", px: 2 }}>
-                            <Typography
-                              variant="overline"
-                              fontWeight={700}
-                              color={STATUS_COLORS[status]}
-                              sx={{ fontSize: 16 }}
-                            >
-                              ORDER
-                            </Typography>
-                            <Typography
-                              variant="subtitle1"
-                              fontWeight={700}
-                              gutterBottom
-                              sx={{
-                                wordBreak: "break-all",
-                                color: STATUS_COLORS[status],
-                                textAlign: "center",
-                                fontSize: 20,
-                              }}
-                            >
-                              #{order.id}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ fontSize: 16 }}
-                            >
-                              <b>Items:</b>{" "}
-                              {order.menuItems?.map((i) => i.name).join(", ")}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              color="text.secondary"
-                              sx={{ fontSize: 16 }}
-                            >
-                              <b>Time:</b>{" "}
-                              {order.requiredTime
-                                ? new Date(order.requiredTime).toLocaleString()
-                                : ""}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              fontWeight={600}
-                              sx={{
-                                color: STATUS_COLORS[status],
-                                display: "inline",
-                                fontSize: 16,
-                              }}
-                            >
-                              <b>Price:</b> ₪{order.finalPrice}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              <b>Order Date:</b>{" "}
-                              {formatDateTime(order.ordertimestamp)}
-                            </Typography>
-                            {status === "done" && (
-                              <Typography
-                                variant="body2"
-                                fontWeight={600}
-                                sx={{
-                                  color: STATUS_COLORS["done"],
-                                  display: "inline",
-                                  ml: 2,
-                                  fontSize: 16,
-                                }}
-                              >
-                                <CheckCircleIcon
-                                  sx={{
-                                    fontSize: 18,
-                                    verticalAlign: "middle",
-                                    color: STATUS_COLORS["done"],
-                                    mr: 0.5,
-                                  }}
-                                />
-                                Done
-                              </Typography>
-                            )}
-                          </CardContent>
-                        </Card>
+                          mode="student"
+                        />
                       </Grid>
                     ))
                   ) : (

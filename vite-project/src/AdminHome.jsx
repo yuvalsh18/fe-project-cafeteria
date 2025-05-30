@@ -1,39 +1,17 @@
 import React, { useEffect, useState } from "react";
 import { db } from "./firebase";
 import { collection, getDocs, doc, updateDoc } from "firebase/firestore";
-import {
-  Box,
-  Typography,
-  Card,
-  CardContent,
-  CardActions,
-  Button,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions as MuiDialogActions,
-  Select,
-  MenuItem,
-  FormControl,
-  InputLabel,
-  Grid,
-} from "@mui/material";
+import { Box, Typography, Paper, Grid } from "@mui/material";
 import usePageTitle from "./hooks/usePageTitle";
 import { useNavigate } from "react-router-dom";
+import OrderDetailsModal from "./components/OrderDetailsModal";
+import { useOrderStatusUpdater } from "./hooks/useOrderStatusUpdater";
+import OrderCard from "./components/OrderCard";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import BuildCircleIcon from "@mui/icons-material/BuildCircle";
 import LocalShippingIcon from "@mui/icons-material/LocalShipping";
 import HourglassBottomIcon from "@mui/icons-material/HourglassBottom";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
-import Paper from "@mui/material/Paper";
-import InfoOutlinedIcon from "@mui/icons-material/InfoOutlined";
-import PersonIcon from "@mui/icons-material/Person";
-import ListAltIcon from "@mui/icons-material/ListAlt";
-import AccessTimeIcon from "@mui/icons-material/AccessTime";
-import AttachMoneyIcon from "@mui/icons-material/AttachMoney";
-import EditNoteIcon from "@mui/icons-material/EditNote";
-import OrderDetailsModal from "./components/OrderDetailsModal";
-import { useOrderStatusUpdater } from "./hooks/useOrderStatusUpdater";
 
 const ORDER_STATUSES = [
   "new",
@@ -68,6 +46,18 @@ const STATUS_BG = {
   "waiting for pickup": "#ede7f6", // lighter purple
   done: "#e6f4ea", // lighter green
 };
+
+// Helper to format date as dd/MM/yyyy and time as HH:mm (24-hour)
+function formatDateTime24(date) {
+  if (!date) return "-";
+  const d = new Date(date.seconds ? date.seconds * 1000 : date);
+  const day = String(d.getDate()).padStart(2, "0");
+  const month = String(d.getMonth() + 1).padStart(2, "0");
+  const year = d.getFullYear();
+  const hours = String(d.getHours()).padStart(2, "0");
+  const minutes = String(d.getMinutes()).padStart(2, "0");
+  return `${day}/${month}/${year} ${hours}:${minutes}`;
+}
 
 export default function AdminHome() {
   usePageTitle({ "/admin": "Admin Home - Ono cafeteria" }, "Ono cafeteria");
@@ -213,99 +203,12 @@ export default function AdminHome() {
                   ordersByStatus[status].length > 0 ? (
                     ordersByStatus[status].map((order) => (
                       <Grid item xs={12} sm={6} md={4} key={order.id}>
-                        <Card
-                          sx={{
-                            cursor: "pointer",
-                            bgcolor: STATUS_BG[status],
-                            boxShadow: 8,
-                            borderRadius: 4,
-                            borderLeft: `6px solid ${STATUS_COLORS[status]}`,
-                            transition: "transform 0.18s, box-shadow 0.18s",
-                            "&:hover": {
-                              transform: "scale(1.04)",
-                              boxShadow: 16,
-                            },
-                            minWidth: 240,
-                            maxWidth: 320,
-                            mx: "auto",
-                            my: 1,
-                            display: "flex",
-                            flexDirection: "column",
-                            alignItems: "center",
-                            position: "relative",
-                            zIndex: 1,
-                          }}
+                        <OrderCard
+                          order={order}
+                          status={status}
                           onClick={() => handleCardClick(order)}
-                        >
-                          <CardContent sx={{ width: "100%", px: 2 }}>
-                            <Typography
-                              variant="overline"
-                              fontWeight={700}
-                              color={STATUS_COLORS[status]}
-                            >
-                              Order
-                            </Typography>
-                            <Typography
-                              variant="subtitle1"
-                              fontWeight={700}
-                              gutterBottom
-                              sx={{
-                                wordBreak: "break-all",
-                                color: STATUS_COLORS[status],
-                                textAlign: "center",
-                              }}
-                            >
-                              #{order.id}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              <b>Student:</b>{" "}
-                              {order.student?.name ||
-                                order.student?.studentId ||
-                                order.studentDocId}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              <b>Items:</b>{" "}
-                              {order.menuItems?.map((i) => i.name).join(", ")}
-                            </Typography>
-                            <Typography variant="body2" color="text.secondary">
-                              <b>Time:</b>{" "}
-                              {order.requiredTime
-                                ? new Date(order.requiredTime).toLocaleString()
-                                : ""}
-                            </Typography>
-                            <Typography
-                              variant="body2"
-                              fontWeight={600}
-                              sx={{
-                                color: STATUS_COLORS[status],
-                                display: "inline",
-                              }}
-                            >
-                              <b>Price:</b> ₪{order.finalPrice}
-                            </Typography>
-                            {status === "done" && (
-                              <Typography
-                                variant="body2"
-                                fontWeight={600}
-                                sx={{
-                                  color: STATUS_COLORS["done"],
-                                  display: "inline",
-                                  ml: 2,
-                                }}
-                              >
-                                <CheckCircleIcon
-                                  sx={{
-                                    fontSize: 18,
-                                    verticalAlign: "middle",
-                                    color: STATUS_COLORS["done"],
-                                    mr: 0.5,
-                                  }}
-                                />
-                                Done
-                              </Typography>
-                            )}
-                          </CardContent>
-                        </Card>
+                          mode="admin"
+                        />
                       </Grid>
                     ))
                   ) : (

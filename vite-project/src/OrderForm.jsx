@@ -8,6 +8,7 @@ import {
   doc,
   getDoc,
   updateDoc,
+  setDoc,
 } from "firebase/firestore";
 import {
   Box,
@@ -256,6 +257,11 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
     setConfirmOpen(true);
   };
 
+  const generateRandomOrderID = () => {
+    // 4-digit number as string, leading zeros allowed
+    return String(Math.floor(1000 + Math.random() * 9000));
+  };
+
   const handleConfirm = async () => {
     setSubmitting(true);
     setError("");
@@ -314,7 +320,23 @@ export default function OrderForm({ mode = "new", studentDocId, orderId }) {
             });
         }
       }
+      let orderID = null;
+      if (mode === "new") {
+        // Generate unique 4-digit orderID
+        let exists = true;
+        while (exists) {
+          orderID = generateRandomOrderID();
+          // Check if any order in this student's orders has this orderID
+          const ordersSnap = await getDocs(
+            collection(db, `students/${studentDocIdToUse}/orders`)
+          );
+          exists = ordersSnap.docs.some(
+            (doc) => doc.data().orderID === orderID
+          );
+        }
+      }
       const order = {
+        orderID: mode === "new" ? orderID : prev?.orderID, // keep existing orderID on edit
         ordertimestamp: Timestamp.now(),
         requiredTime: requiredTime ? requiredTime.toISOString() : "",
         finalPrice,

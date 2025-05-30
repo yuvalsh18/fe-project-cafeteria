@@ -29,6 +29,15 @@ const ORDER_STATUSES = [
   "done",
 ];
 
+// Add status colors for use in the modal
+const STATUS_COLORS = {
+  new: "#1976d2",
+  "in making": "#fb8c00",
+  "in delivery": "#00897b",
+  "waiting for pickup": "#7e57c2",
+  done: "#388e3c",
+};
+
 export default function OrderDetailsModal({
   open,
   order,
@@ -98,7 +107,7 @@ export default function OrderDetailsModal({
               sx={{ mr: 1, verticalAlign: "middle" }}
               fontSize="small"
             />
-            <b>Order ID:</b> {order.id}
+            <b>Order ID:</b> {order.orderID ? order.orderID : order.id}
           </Typography>
           {mode === "admin" && (
             <Typography>
@@ -196,6 +205,19 @@ export default function OrderDetailsModal({
             )}
           </Box>
         </Box>
+        <Typography
+          variant="subtitle1"
+          fontWeight={700}
+          gutterBottom
+          sx={{
+            wordBreak: "break-all",
+            color: STATUS_COLORS[status],
+            textAlign: "center",
+            fontSize: 20,
+          }}
+        >
+          #{order.orderID || order.id}
+        </Typography>
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary" variant="contained">
