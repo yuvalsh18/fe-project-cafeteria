@@ -64,6 +64,17 @@ jobs:
           node ci-checks.js
 
       # 5 — install & build
+      - name: Check VITE_GEMINI_API_KEY is present
+        run: |
+          if [ -z "$VITE_GEMINI_API_KEY" ]; then
+            echo "VITE_GEMINI_API_KEY is not set in GitHub environment secrets. Build cannot continue." >&2
+            exit 1
+          else
+            echo "VITE_GEMINI_API_KEY is present."
+          fi
+        env:
+          VITE_GEMINI_API_KEY: ${{ secrets.VITE_GEMINI_API_KEY }}
+
       - name: Install dependencies
         run: npm ci
 
