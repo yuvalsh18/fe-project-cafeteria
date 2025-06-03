@@ -16,6 +16,10 @@ import AssignmentIcon from "@mui/icons-material/Assignment";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
 import useMode from "./hooks/useMode";
 import Header from "./Header";
+import FirestoreStatus from "./components/FirestoreStatus";
+import StatsCards from "./components/StatsCards";
+import OrdersByStatusProgress from "./components/OrdersByStatusProgress";
+import AccessDenied from "./components/AccessDenied";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ students: 0, menuItems: 0, orders: 0 });
@@ -133,58 +137,7 @@ export default function AdminDashboard() {
   }, [mode]);
 
   if (mode === "student") {
-    return (
-      <>
-        <Header />
-        <Box
-          sx={{
-            p: 5,
-            borderRadius: 5,
-            maxWidth: 420,
-            mx: "auto",
-            textAlign: "center",
-            boxShadow: 4,
-            bgcolor: "white",
-          }}
-        >
-          <Box
-            sx={{
-              display: "flex",
-              flexDirection: "column",
-              alignItems: "center",
-              mb: 2,
-            }}
-          >
-            <HighlightOffIcon
-              sx={{ fontSize: 64, color: "error.main", mb: 1 }}
-            />
-            <Typography
-              variant="h4"
-              color="error"
-              fontWeight={600}
-              gutterBottom
-            >
-              Access Denied
-            </Typography>
-          </Box>
-          <Typography variant="subtitle1" color="text.secondary" gutterBottom>
-            Oops! This page is for admins only.
-          </Typography>
-          <Typography
-            variant="body2"
-            color="text.secondary"
-            sx={{ mt: 2, mb: 1, lineHeight: 1.7 }}
-          >
-            Looks like you tried to sneak into the admin lounge.
-            <br />
-            But don’t worry, we won’t tell anyone.{" "}
-            <span role="img" aria-label="shushing face">
-              🤫
-            </span>
-          </Typography>
-        </Box>
-      </>
-    );
+    return <AccessDenied />;
   }
 
   const totalOrders = Object.values(stats.orders).reduce((a, b) => a + b, 0);
@@ -218,18 +171,7 @@ export default function AdminDashboard() {
       </Typography>
       <Grid container spacing={4} justifyContent="center">
         <Grid item xs={12} md={8}>
-          <Paper sx={{ p: 3, mb: 4, borderRadius: 3, boxShadow: 3 }}>
-            <Typography variant="h6" gutterBottom sx={{ mb: 2 }}>
-              Firestore Connectivity
-            </Typography>
-            {firestoreStatus === "checking" && <CircularProgress size={20} />}
-            {firestoreStatus === "connected" && (
-              <Alert severity="success">Connected to Firestore</Alert>
-            )}
-            {firestoreStatus === "disconnected" && (
-              <Alert severity="error">Not connected to Firestore</Alert>
-            )}
-          </Paper>
+          <FirestoreStatus firestoreStatus={firestoreStatus} />
         </Grid>
         <Grid item xs={12} md={8}>
           <Paper
@@ -262,205 +204,15 @@ export default function AdminDashboard() {
             ) : error ? (
               <Alert severity="error">{error}</Alert>
             ) : (
-              <Grid
-                container
-                spacing={4}
-                justifyContent="center"
-                alignItems="stretch"
-              >
-                <Grid item xs={12} sm={4}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: "center",
-                      borderRadius: 3,
-                      boxShadow: 4,
-                      bgcolor: "#23272f",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <PeopleIcon
-                      sx={{ fontSize: 44, color: "#1976d2", mb: 1 }}
-                    />
-                    <Typography
-                      variant="h3"
-                      sx={{ color: "#fff", fontWeight: 800, mb: 0 }}
-                    >
-                      {stats.students}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: "#b0b3b8",
-                        fontWeight: 600,
-                        fontSize: 18,
-                        mt: 1,
-                      }}
-                    >
-                      Students
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: "center",
-                      borderRadius: 3,
-                      boxShadow: 4,
-                      bgcolor: "#23272f",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <RestaurantMenuIcon
-                      sx={{ fontSize: 44, color: "#43a047", mb: 1 }}
-                    />
-                    <Typography
-                      variant="h3"
-                      sx={{ color: "#fff", fontWeight: 800, mb: 0 }}
-                    >
-                      {stats.menuItems}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: "#b0b3b8",
-                        fontWeight: 600,
-                        fontSize: 18,
-                        mt: 1,
-                      }}
-                    >
-                      Menu Items
-                    </Typography>
-                  </Paper>
-                </Grid>
-                <Grid item xs={12} sm={4}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      textAlign: "center",
-                      borderRadius: 3,
-                      boxShadow: 4,
-                      bgcolor: "#23272f",
-                      height: "100%",
-                      display: "flex",
-                      flexDirection: "column",
-                      alignItems: "center",
-                      justifyContent: "center",
-                    }}
-                  >
-                    <AssignmentIcon
-                      sx={{ fontSize: 44, color: "#fbc02d", mb: 1 }}
-                    />
-                    <Typography
-                      sx={{
-                        color: "#fff",
-                        fontWeight: 800,
-                        fontSize: 40,
-                        mb: 0,
-                      }}
-                    >
-                      {" "}
-                      {totalOrders}{" "}
-                    </Typography>
-                    <Typography
-                      sx={{
-                        color: "#b0b3b8",
-                        fontWeight: 600,
-                        fontSize: 18,
-                        mt: 1,
-                      }}
-                    >
-                      Orders
-                    </Typography>
-                  </Paper>
-                </Grid>
+              <>
+                <StatsCards stats={stats} totalOrders={totalOrders} />
                 <Grid item xs={12}>
-                  <Paper
-                    sx={{
-                      p: 3,
-                      bgcolor: "#23272f",
-                      borderRadius: 3,
-                      boxShadow: 4,
-                      mt: 2,
-                    }}
-                  >
-                    <Typography
-                      variant="h6"
-                      sx={{
-                        color: "#fff",
-                        mb: 3,
-                        fontWeight: 700,
-                        textAlign: "center",
-                        letterSpacing: 1,
-                      }}
-                    >
-                      Orders by Status (Progress)
-                    </Typography>
-                    <Box sx={{ width: 600, mx: "auto" }}>
-                      {" "}
-                      {/* Fixed width for all bars */}
-                      {orderStatusLabels.map((s) => (
-                        <Box
-                          key={s.label}
-                          sx={{
-                            mb: 3,
-                            display: "flex",
-                            alignItems: "center",
-                            gap: 2,
-                            width: "100%",
-                          }}
-                        >
-                          <Box sx={{ width: 180, pr: 2 }}>
-                            <Typography
-                              sx={{
-                                color: s.color,
-                                fontWeight: 700,
-                                fontSize: 18,
-                                textShadow: "0 1px 2px #111",
-                                whiteSpace: "nowrap",
-                                ml: 0,
-                              }}
-                            >
-                              {s.label}{" "}
-                              <span
-                                style={{ color: "#b0b3b8", fontWeight: 600 }}
-                              >
-                                ({s.value})
-                              </span>
-                            </Typography>
-                          </Box>
-                          <Box sx={{ flex: 1, minWidth: 0, width: "100%" }}>
-                            <LinearProgress
-                              variant="determinate"
-                              value={
-                                totalOrders
-                                  ? Math.round((s.value / totalOrders) * 100)
-                                  : 0
-                              }
-                              sx={{
-                                width: "100%",
-                                height: 14,
-                                borderRadius: 2,
-                                bgcolor: "#333",
-                                "& .MuiLinearProgress-bar": {
-                                  backgroundColor: s.color,
-                                },
-                              }}
-                            />
-                          </Box>
-                        </Box>
-                      ))}
-                    </Box>
-                  </Paper>
+                  <OrdersByStatusProgress
+                    orderStatusLabels={orderStatusLabels}
+                    totalOrders={totalOrders}
+                  />
                 </Grid>
-              </Grid>
+              </>
             )}
           </Paper>
         </Grid>
