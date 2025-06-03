@@ -8,14 +8,14 @@ import {
   Alert,
   LinearProgress,
 } from "@mui/material";
-import { db } from "../firebase";
+import { db } from "./firebase";
 import { collection, getCountFromServer } from "firebase/firestore";
 import PeopleIcon from "@mui/icons-material/People";
 import RestaurantMenuIcon from "@mui/icons-material/RestaurantMenu";
 import AssignmentIcon from "@mui/icons-material/Assignment";
 import HighlightOffIcon from "@mui/icons-material/HighlightOff";
-import useMode from "../hooks/useMode";
-import Header from "../Header";
+import useMode from "./hooks/useMode";
+import Header from "./Header";
 
 export default function AdminDashboard() {
   const [stats, setStats] = useState({ students: 0, menuItems: 0, orders: 0 });

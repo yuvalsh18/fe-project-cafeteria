@@ -17,7 +17,7 @@ import usePageTitle from "./hooks/usePageTitle";
 import MenuItemForm from "./MenuItemForm";
 import Students from "./Students";
 import OrderForm from "./OrderForm";
-import AdminDashboard from "./components/AdminDashboard";
+import AdminDashboard from "./AdminDashboard";
 import useMode from "./hooks/useMode";
 import AdminHome from "./AdminHome";
 import RequireAuth from "./RequireAuth";
